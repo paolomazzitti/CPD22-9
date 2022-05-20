@@ -89,6 +89,8 @@ Temporary Items
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
+*.ipynb
+
 # IPython
 profile_default/
 ipython_config.py

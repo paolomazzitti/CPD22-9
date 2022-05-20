@@ -1,5 +1,5 @@
 using Base.Threads
-import CPD9 as Lar
+using CPD9
 
 function setTileBool(box)
     b1, b2, b3, b4 = box
@@ -116,10 +116,11 @@ function bool2d(assembly)
     listOfModels = CPD9.evalStruct(assembly)
     boolmatrix = BitArray(undef, copFE.m, length(listOfModels))
     containmenttest = testinternalpoint2d(listOfModels)
-    @threads for (k, point) in collect(enumerate(innerpoints)) #qui
+
+    Threads.@threads for (k, point) in collect(enumerate(innerpoints))
         cells = containmenttest(point)
         for l in cells
-            @inbounds boolmatrix[k, l] = 1
+            boolmatrix[k, l] = 1
         end
     end
     return W, copEV, copFE, boolmatrix
