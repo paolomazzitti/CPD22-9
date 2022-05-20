@@ -86,4 +86,11 @@ Temporary Items
 # Ignore code-workspaces
 *.code-workspace
 
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
 # End of https://www.toptal.com/developers/gitignore/api/julia,visualstudiocode,macos
