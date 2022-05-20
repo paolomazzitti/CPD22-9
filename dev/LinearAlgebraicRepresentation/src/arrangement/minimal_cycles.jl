@@ -1,7 +1,7 @@
-using CPD9
-Lar = CPD9
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
 
-function minimal_2cycles(V::CPD9.Points, EV::CPD9.ChainOp)
+function minimal_2cycles(V::Lar.Points, EV::Lar.ChainOp)
 
     function edge_angle(v::Int, e::Int)
         edge = EV[e, :]
@@ -14,13 +14,13 @@ function minimal_2cycles(V::CPD9.Points, EV::CPD9.ChainOp)
         j = min(EV[i, :].nzind...)
         EV[i, j] = -1
     end
-    VE = convert(CPD9.ChainOp, SparseArrays.transpose(EV))
-    EF = CPD9.Arrangement.minimal_cycles(edge_angle)(V, VE)
+    VE = convert(Lar.ChainOp, SparseArrays.transpose(EV))
+    EF = Lar.Arrangement.minimal_cycles(edge_angle)(V, VE)
 
-    return convert(CPD9.ChainOp, SparseArrays.transpose(EF))
+    return convert(Lar.ChainOp, SparseArrays.transpose(EF))
 end
 
-function minimal_3cycles(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
+function minimal_3cycles(V::Lar.Points, EV::Lar.ChainOp, FE::Lar.ChainOp)
 
 
     triangulated_faces = Array{Any,1}(undef, FE.m)
@@ -39,7 +39,7 @@ function minimal_3cycles(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
             end
 
             #vs = V[vs_idxs, :]
-            fv, edges = CPD9.vcycle(EV, FE, f)
+            fv, edges = Lar.vcycle(EV, FE, f)
 
             vs = V[fv, :]
 
@@ -61,10 +61,10 @@ function minimal_3cycles(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
 
             # triangulated_faces[f] = Triangle.constrained_triangulation(
             #     Array{Float64,2}(vs), vs_idxs, edges, fill(true, edge_num))
-            v = convert(CPD9.Points, vs'[1:2, :])
+            v = convert(Lar.Points, vs'[1:2, :])
             vmap = Dict(zip(fv, 1:length(fv))) # vertex map
             mapv = Dict(zip(1:length(fv), fv)) # inverse vertex map
-            trias = CPD9.triangulate2d(v, edges)
+            trias = Lar.triangulate2d(v, edges)
             triangulated_faces[f] = [[mapv[v] for v in tria] for tria in trias]
         end
         edge_vs = EV[e, :].nzind
@@ -95,20 +95,20 @@ function minimal_3cycles(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
     end
 
     #EF = FE'
-    EF = convert(CPD9.ChainOp, LinearAlgebra.transpose(FE))
+    EF = convert(Lar.ChainOp, LinearAlgebra.transpose(FE))
 
-    FC = CPD9.Arrangement.minimal_cycles(face_angle)(V, EF)  # , EV)
+    FC = Lar.Arrangement.minimal_cycles(face_angle)(V, EF)  # , EV)
 
     #FC'
-    return -convert(CPD9.ChainOp, LinearAlgebra.transpose(FC))
+    return -convert(Lar.ChainOp, LinearAlgebra.transpose(FC))
 end
 
 
 function minimal_cycles(angles_fn::Function)
 
 
-    function _minimal_cycles(V::CPD9.Points,
-        ld_bounds::CPD9.ChainOp)  # , EV)
+    function _minimal_cycles(V::Lar.Points,
+        ld_bounds::Lar.ChainOp)  # , EV)
 
         lld_cellsnum, ld_cellsnum = size(ld_bounds)
         count_marks = zeros(Int64, ld_cellsnum)

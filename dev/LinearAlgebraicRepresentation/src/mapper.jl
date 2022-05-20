@@ -66,7 +66,7 @@ With default values, i.e. `circle()()`, return the whole circonference of unit r
 
 # Example
 ```julia
-julia> W,CW = CPD9.circle()();
+julia> W,CW = Lar.circle()();
 
 julia> GL.VIEW([
 	GL.GLLines(W, CW, GL.COLORS[12]),
@@ -93,7 +93,7 @@ Compute the approximate elix curve in three-dimensional space, with basis on ``z
 
 # Example
 ```julia
-julia> V, CV = CPD9.helix(.1, .1, 10)()
+julia> V, CV = Lar.helix(.1, .1, 10)()
 ([0.1 0.0984808 … 0.0984808 0.1; 0.0 0.0173648 … -0.0173648 0.0; 0.0 0.0027778 … 0.997222 1.0], Array{Int64,1}[[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11]  …  [351, 352], [352, 353], [353, 354], [354, 355], [355, 356], [356, 357], [357, 358], [358, 359], [359, 360], [360, 361]])
 
 julia> GL.VIEW([
@@ -123,7 +123,7 @@ Compute the cellular complex approximating a circular sector of 2D disk centered
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLGrid( CPD9.disk()()..., GL.COLORS[1],1 ),
+	GL.GLGrid( Lar.disk()()..., GL.COLORS[1],1 ),
 	GL.GLFrame
 ]);
 ```
@@ -136,7 +136,7 @@ function disk(radius=1., angle=2*pi)
         V = hcat(map(p->let(u, v)=p;[v*cos(u);v*sin(u)] end, W)...)
         W, FW = simplifyCells(V, FV)
         FW = [cell for cell in FW if length(cell)==3]
-		#EW = CPD9.simplexFacets(FW)
+		#EW = Lar.simplexFacets(FW)
         return W, FW #, EW
     end
     return disk0
@@ -151,7 +151,7 @@ Compute an approximation of the helicoid surface in 3D, with basis on ``z=0`` pl
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLGrid( CPD9.helicoid()()..., GL.COLORS[1],1 ),
+	GL.GLGrid( Lar.helicoid()()..., GL.COLORS[1],1 ),
 	GL.GLFrame
 ]);
 ```
@@ -179,7 +179,7 @@ Compute the cellular 2-complex approximating a (possibly full) sector of a non-c
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLGrid( CPD9.ring()()..., GL.COLORS[1],1 ),
+	GL.GLGrid( Lar.ring()()..., GL.COLORS[1],1 ),
 	GL.GLFrame
 ]);
 ```
@@ -209,14 +209,14 @@ Compute a cellular 2-complex, approximation of a right circular cylindrical surf
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLGrid( CPD9.cylinder()()..., GL.COLORS[1],1 ),
+	GL.GLGrid( Lar.cylinder()()..., GL.COLORS[1],1 ),
 	GL.GLFrame
 ]);
 ```
 """
 function cylinder(radius=.5, height=2., angle=2*pi)
     function cylinder0(shape=[36, 1])
-        V, CV = CPD9.cuboidGrid(shape)
+        V, CV = Lar.cuboidGrid(shape)
 		CV = [[[u,v,w],[w,v,t]] for (u,v,w,t) in CV]
 		CV = reduce(append!,CV)
         V = [angle/shape[1] 0.0 ; 0.0 1.0/shape[2]]*V
@@ -239,7 +239,7 @@ Compute a cellular 2-complex, approximation of the two-dimensional closed surfac
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLGrid( CPD9.sphere()()..., GL.COLORS[1],0.75 ),
+	GL.GLGrid( Lar.sphere()()..., GL.COLORS[1],0.75 ),
 	GL.GLFrame
 ]);
 ```
@@ -276,7 +276,7 @@ It can be constructed from a rectangle by gluing both pairs of opposite edges to
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLGrid( CPD9.toroidal()()..., GL.COLORS[1],0.75 ),
+	GL.GLGrid( Lar.toroidal()()..., GL.COLORS[1],0.75 ),
 	GL.GLFrame
 ]);
 ```
@@ -305,7 +305,7 @@ This open surface is generated as an "half-torus", providing only the external s
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLGrid( CPD9.crown()()..., GL.COLORS[1],0.75 ),
+	GL.GLGrid( Lar.crown()()..., GL.COLORS[1],0.75 ),
 	GL.GLFrame
 ]);
 ```
@@ -344,12 +344,12 @@ Array{Int64,1}[[1, 2], [3, 4], [5, 6], [7, 8], [1, 3], [2, 4], [5, 7], [6, 8], [
 6], [3, 7], [4, 8]], Array{Int64,1}[[1, 2, 3, 4], [5, 6, 7, 8], [1, 2, 5, 6], [3, 4, 7,
 8], [1, 3, 5, 7], [2, 4, 6, 8]], Array{Int64,1}[[1, 2, 3, 4, 5, 6, 7, 8]]])
 
-julia> V, (VV, EV, FV, CV) = CPD9.cuboid([1,1,1], true);
+julia> V, (VV, EV, FV, CV) = Lar.cuboid([1,1,1], true);
 
-julia> assembly = CPD9.Struct([ (V, CV), CPD9.t(1.5,0,0), (V, CV) ])
+julia> assembly = Lar.Struct([ (V, CV), Lar.t(1.5,0,0), (V, CV) ])
 
 julia> GL.VIEW([
-	GL.GLPol( CPD9.struct2lar(assembly)..., GL.COLORS[1],0.75 ),
+	GL.GLPol( Lar.struct2lar(assembly)..., GL.COLORS[1],0.75 ),
 	GL.GLFrame ]);
 ```
 """
@@ -373,7 +373,7 @@ The variable `shape` provides the domain decomposition. Empty cells are removed 
 # Example
 ```julia
 julia> GL.VIEW([
-	GL.GLPol( CPD9.ball()()..., GL.COLORS[1],0.5 ),
+	GL.GLPol( Lar.ball()()..., GL.COLORS[1],0.5 ),
 	GL.GLFrame ]);
 ```
 """
@@ -413,7 +413,7 @@ julia> rod()()[2]
  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9  …  64, 65, 66, 67, 68, 69, 70, 71, 72, 73]
 
 julia> GL.VIEW([
- 	GL.GLPol( CPD9.rod()()..., GL.COLORS[1],0.5 ),
+ 	GL.GLPol( Lar.rod()()..., GL.COLORS[1],0.5 ),
  	GL.GLFrame ]);
 ```
 """
@@ -436,7 +436,7 @@ internal axial hole. The model is meshed with cubical 3-cells.
 # Example
 ```julia
 julia> GL.VIEW([
- 	GL.GLPol( CPD9.hollowCyl()()..., GL.COLORS[1],0.5 ),
+ 	GL.GLPol( Lar.hollowCyl()()..., GL.COLORS[1],0.5 ),
  	GL.GLFrame ]);
 ```
 """
@@ -462,7 +462,7 @@ Compute the cellular 3-complex approximating a 3-sphere. The model is meshed wit
 
 # Example
 ```julia
-julia> V, CV = CPD9.hollowBall(1, 2, pi/2, pi/2)([6, 12, 4]);
+julia> V, CV = Lar.hollowBall(1, 2, pi/2, pi/2)([6, 12, 4]);
 
 julia> GL.VIEW([
  	GL.GLPol( V, CV, GL.COLORS[1],0.5 ),
@@ -495,7 +495,7 @@ Compute the cellular 3-complex approximating the solid torus in 3D. The model is
 # Example
 ```julia
 julia> GL.VIEW([
- 	GL.GLPol( CPD9.torus(1., 2., .5, pi, pi)()..., GL.COLORS[1],0.5 ),
+ 	GL.GLPol( Lar.torus(1., 2., .5, pi, pi)()..., GL.COLORS[1],0.5 ),
  	GL.GLFrame ]);
 ```
 """

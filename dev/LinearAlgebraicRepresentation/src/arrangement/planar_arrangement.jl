@@ -1,9 +1,9 @@
-using CPD9
-Lar = CPD9
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
 
 """
     frag_edge_channel(in_chan, out_chan,
-        V::CPD9.Points, EV::CPD9.ChainOp, bigPI)
+        V::Lar.Points, EV::Lar.ChainOp, bigPI)
 
 Parallel fragmentation of edges in `EV` using the spatial index `bigPI`.
 """
@@ -20,17 +20,17 @@ function frag_edge_channel(in_chan, out_chan, V, EV, bigPI)
 end
 
 """
-    frag_edge(V::CPD9.Points, EV::CPD9.ChainOp, edge_idx::Int, bigPI::Array)
+    frag_edge(V::Lar.Points, EV::Lar.ChainOp, edge_idx::Int, bigPI::Array)
 
 Fragment the edge of index `edge_idx` using the edges indicized in `bigPI`.
 """
-function frag_edge(V, EV::CPD9.ChainOp, edge_idx::Int, bigPI)
+function frag_edge(V, EV::Lar.ChainOp, edge_idx::Int, bigPI)
     alphas = Dict{Float64, Int}()
     edge = EV[edge_idx, :]
     verts = V[edge.nzind, :]
     for i in bigPI[edge_idx]
         if i != edge_idx
-            intersection = CPD9.Arrangement.intersect_edges(
+            intersection = Lar.Arrangement.intersect_edges(
             	V, edge, EV[i, :])
             for (point, alpha) in intersection
                 verts = [verts; point]
@@ -52,16 +52,16 @@ end
 
 
 """
-    intersect_edges(V::CPD9.Points, edge1::CPD9.Cell, edge2::CPD9.Cell)
+    intersect_edges(V::Lar.Points, edge1::Lar.Cell, edge2::Lar.Cell)
 
 Intersect two 2D edges (`edge1` and `edge2`).
 """
-function intersect_edges(V::CPD9.Points, edge1::CPD9.Cell, edge2::CPD9.Cell)
+function intersect_edges(V::Lar.Points, edge1::Lar.Cell, edge2::Lar.Cell)
     err = 10e-8
 
     x1, y1, x2, y2 = vcat(map(c->V[c, :], edge1.nzind)...)
     x3, y3, x4, y4 = vcat(map(c->V[c, :], edge2.nzind)...)
-    ret = Array{Tuple{CPD9.Points, Float64}, 1}()
+    ret = Array{Tuple{Lar.Points, Float64}, 1}()
 
     v1 = [x2-x1, y2-y1];
     v2 = [x4-x3, y4-y3];
@@ -96,11 +96,11 @@ end
 
 
 """
-    merge_vertices!(V::CPD9.Points, EV::CPD9.ChainOp, edge_map, err=1e-4)
+    merge_vertices!(V::Lar.Points, EV::Lar.ChainOp, edge_map, err=1e-4)
 
 Merge congruent vertices and edges in `V` and `EV`.
 """
-function merge_vertices!(V::CPD9.Points, EV::CPD9.ChainOp, edge_map, err=1e-4)
+function merge_vertices!(V::Lar.Points, EV::Lar.ChainOp, edge_map, err=1e-4)
     vertsnum = size(V, 1)
     edgenum = size(EV, 1)
     newverts = zeros(Int, vertsnum)
@@ -113,7 +113,7 @@ function merge_vertices!(V::CPD9.Points, EV::CPD9.ChainOp, edge_map, err=1e-4)
     i = 1
     for vi in 1:vertsnum
         if !(vi in todelete)
-            nearvs = CPD9.inrange(kdtree, V[vi, :], err)
+            nearvs = Lar.inrange(kdtree, V[vi, :], err)
             newverts[nearvs] .= i
             nearvs = setdiff(nearvs, vi)
             todelete = union(todelete, nearvs)
@@ -149,17 +149,17 @@ function merge_vertices!(V::CPD9.Points, EV::CPD9.ChainOp, edge_map, err=1e-4)
         edge_map[i] = row
     end
     # return new vertices and new edges
-    return CPD9.Points(nV), nEV
+    return Lar.Points(nV), nEV
 end
 
 
 """
-    biconnected_components(EV::CPD9.ChainOp)
+    biconnected_components(EV::Lar.ChainOp)
 
 Compute the biconnected components of the `EV` graph, represented
 by edges as pairs of vertices.
 """
-function biconnected_components(EV::CPD9.ChainOp)
+function biconnected_components(EV::Lar.ChainOp)
 
     ps = Array{Tuple{Int, Int, Int}, 1}()
     es = Array{Tuple{Int, Int}, 1}()
@@ -257,7 +257,7 @@ function biconnected_components(EV::CPD9.ChainOp)
     return bicon_comps
 end
 
-function get_external_cycle(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
+function get_external_cycle(V::Lar.Points, EV::Lar.ChainOp, FE::Lar.ChainOp)
     FV = abs.(FE)*EV
     vs = sparsevec(mapslices(sum, abs.(EV), dims=1)').nzind
     minv_x1 = maxv_x1 = minv_x2 = maxv_x2 = pop!(vs)
@@ -283,7 +283,7 @@ function get_external_cycle(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
         return cells[1]
     else
         for c in cells
-            if CPD9.face_area(V, EV, FE[c, :]) < 0
+            if Lar.face_area(V, EV, FE[c, :]) < 0
                 return c
             end
         end
@@ -295,7 +295,7 @@ function pre_containment_test(bboxes)
 
     for i in 1:n
         for j in 1:n
-            if i != j && CPD9.bbox_contains(bboxes[j], bboxes[i])
+            if i != j && Lar.bbox_contains(bboxes[j], bboxes[i])
                 containment_graph[i, j] = 1
             end
         end
@@ -316,7 +316,7 @@ function prune_containment_graph(n, V, EVs, shells, graph)
                     shell_edge_indexes = shells[j].nzind
                     ev = EVs[j][shell_edge_indexes, :]
 
-                    if !CPD9.point_in_face(origin, V, ev)
+                    if !Lar.point_in_face(origin, V, ev)
                         graph[i, j] = 0
                     end
                 end
@@ -341,11 +341,11 @@ function transitive_reduction!(graph)
     end
 end
 function cell_merging(n, containment_graph, V, EVs, boundaries, shells, shell_bboxes)
-    function bboxes(V::CPD9.Points, indexes::CPD9.ChainOp)
+    function bboxes(V::Lar.Points, indexes::Lar.ChainOp)
         boxes = Array{Tuple{Any, Any}}(undef, indexes.n)
         for i in 1:indexes.n
             v_inds = indexes[:, i].nzind
-            boxes[i] = CPD9.bbox(V[v_inds, :])
+            boxes[i] = Lar.bbox(V[v_inds, :])
         end
         boxes
     end
@@ -359,7 +359,7 @@ function cell_merging(n, containment_graph, V, EVs, boundaries, shells, shell_bb
                 if containment_graph[child, father] > 0
                     child_bbox = shell_bboxes[child]
                     for b in 1:length(father_bboxes)
-                        if CPD9.bbox_contains(father_bboxes[b], child_bbox)
+                        if Lar.bbox_contains(father_bboxes[b], child_bbox)
                             push!(sums, (father, b, child))
                             break
                         end
@@ -400,16 +400,16 @@ end
 function componentgraph(V, copEV, bicon_comps)
     # arrangement of isolated components
 	n = size(bicon_comps, 1)
-   	shells = Array{CPD9.Chain, 1}(undef, n)
-	boundaries = Array{CPD9.ChainOp, 1}(undef, n)
-	EVs = Array{CPD9.ChainOp, 1}(undef, n)
+   	shells = Array{Lar.Chain, 1}(undef, n)
+	boundaries = Array{Lar.ChainOp, 1}(undef, n)
+	EVs = Array{Lar.ChainOp, 1}(undef, n)
     # for each component
 	for p in 1:n
 		ev = copEV[sort(bicon_comps[p]), :]
         # computation of 2-cells
-		fe = CPD9.Arrangement.minimal_2cycles(V, ev)
+		fe = Lar.Arrangement.minimal_2cycles(V, ev)
         # exterior cycle
-		shell_num = CPD9.Arrangement.get_external_cycle(V, ev, fe)
+		shell_num = Lar.Arrangement.get_external_cycle(V, ev, fe)
         # decompose each fe (co-boundary local to component)
 		EVs[p] = ev
 		tokeep = setdiff(1:fe.m, shell_num)
@@ -420,7 +420,7 @@ function componentgraph(V, copEV, bicon_comps)
 	shell_bboxes = []
 	for i in 1:n
     	vs_indexes = (abs.(EVs[i]')*abs.(shells[i])).nzind
-   		push!(shell_bboxes, CPD9.bbox(V[vs_indexes, :]))
+   		push!(shell_bboxes, Lar.bbox(V[vs_indexes, :]))
 	end
     # computation and reduction of containment graph
 	containment_graph = pre_containment_test(shell_bboxes)
@@ -442,7 +442,7 @@ function cleandecomposition(V, copEV, sigma, edge_map)
             v1, v2 = map(i->V[vidxs[i], :], [1,2])
             centroid = .5*(v1 + v2)
 
-            if ! CPD9.point_in_face(centroid, V, ev)
+            if ! Lar.point_in_face(centroid, V, ev)
                 push!(todel, e)
             end
         end
@@ -461,24 +461,24 @@ function cleandecomposition(V, copEV, sigma, edge_map)
         end
     end
 
-    V, copEV = CPD9.delete_edges(todel, V, copEV)
+    V, copEV = Lar.delete_edges(todel, V, copEV)
 	return V,copEV
 end
 
 function planar_arrangement_1( V, copEV,
-		sigma::CPD9.Chain=spzeros(Int8, 0),
+		sigma::Lar.Chain=spzeros(Int8, 0),
 		return_edge_map::Bool=false,
 		multiproc::Bool=false)
 	# data structures initialization
 	edgenum = size(copEV, 1)
 	edge_map = Array{Array{Int, 1}, 1}(undef,edgenum)
-	rV = CPD9.Points(zeros(0, 2))
+	rV = Lar.Points(zeros(0, 2))
 	rEV = SparseArrays.spzeros(Int8, 0, 0)
 	finalcells_num = 0
 
 	# spaceindex computation
-	model = (convert(CPD9.Points,V'),CPD9.cop2lar(copEV))
-	bigPI = CPD9.spaceindex(model::CPD9.CPD9a)
+	model = (convert(Lar.Points,V'),Lar.cop2lar(copEV))
+	bigPI = Lar.spaceindex(model::Lar.LAR)
 
     # multiprocessing of edge fragmentation
     if (multiproc == true)
@@ -506,7 +506,7 @@ function planar_arrangement_1( V, copEV,
             newedges_nums = map(x->x+finalcells_num, collect(1:size(ev, 1)))
             edge_map[i] = newedges_nums
             finalcells_num += size(ev, 1)
-            rV, rEV = CPD9.skel_merge(rV, rEV, v, ev)
+            rV, rEV = Lar.skel_merge(rV, rEV, v, ev)
         end
     else
         # sequential (iterative) processing of edge fragmentation
@@ -515,8 +515,8 @@ function planar_arrangement_1( V, copEV,
             newedges_nums = map(x->x+finalcells_num, collect(1:size(ev, 1)))
             edge_map[i] = newedges_nums
             finalcells_num += size(ev, 1)
-            rV = convert(CPD9.Points, rV)
-            rV, rEV = CPD9.skel_merge(rV, rEV, v, ev)
+            rV = convert(Lar.Points, rV)
+            rV, rEV = Lar.skel_merge(rV, rEV, v, ev)
         end
     end
     # merging of close vertices and edges (2D congruence)
@@ -526,7 +526,7 @@ function planar_arrangement_1( V, copEV,
 end
 
 function planar_arrangement_2(V, copEV,bicon_comps, edge_map,
-		sigma::CPD9.Chain=spzeros(Int8, 0))
+		sigma::Lar.Chain=spzeros(Int8, 0))
 
     edges = sort(union(bicon_comps...))
     todel = sort(setdiff(collect(1:size(copEV,1)), edges))
@@ -545,12 +545,12 @@ function planar_arrangement_2(V, copEV,bicon_comps, edge_map,
     end
 
 
-	bicon_comps = CPD9.Arrangement.biconnected_components(copEV)
+	bicon_comps = Lar.Arrangement.biconnected_components(copEV)
 
 	# component graph
-	n, containment_graph, V, EVs, boundaries, shells, shell_bboxes=CPD9.Arrangement.componentgraph(V,copEV,bicon_comps)
+	n, containment_graph, V, EVs, boundaries, shells, shell_bboxes=Lar.Arrangement.componentgraph(V,copEV,bicon_comps)
 
-	copEV, FE = CPD9.Arrangement.cell_merging(
+	copEV, FE = Lar.Arrangement.cell_merging(
 	   	n, containment_graph, V, EVs, boundaries, shells, shell_bboxes)
 
 	return V,copEV,FE
@@ -572,24 +572,24 @@ returns the full arranged complex `V`, `EV` and `FE`.
 - `multiproc::Bool`: Runs the computation in parallel mode. Defaults to `false`.
 """
 function planar_arrangement(
-        V::CPD9.Points,
-        copEV::CPD9.ChainOp,
-        sigma::CPD9.Chain=spzeros(Int8, 0),
+        V::Lar.Points,
+        copEV::Lar.ChainOp,
+        sigma::Lar.Chain=spzeros(Int8, 0),
         return_edge_map::Bool=false,
         multiproc::Bool=false)
 
 
 #planar_arrangement_1
-	V,copEV,sigma,edge_map=CPD9.Arrangement.planar_arrangement_1(V,copEV,sigma,return_edge_map,multiproc)
+	V,copEV,sigma,edge_map=Lar.Arrangement.planar_arrangement_1(V,copEV,sigma,return_edge_map,multiproc)
 
 # cleandecomposition
 	if sigma.n > 0
-		V,copEV=CPD9.Arrangement.cleandecomposition(V, copEV, sigma, edge_map)
+		V,copEV=Lar.Arrangement.cleandecomposition(V, copEV, sigma, edge_map)
 	end
 
-    bicon_comps = CPD9.Arrangement.biconnected_components(copEV)
-    # EV = CPD9.cop2lar(copEV)
-    # V,bicon_comps = CPD9.biconnectedComponent((V,EV))
+    bicon_comps = Lar.Arrangement.biconnected_components(copEV)
+    # EV = Lar.cop2lar(copEV)
+    # V,bicon_comps = Lar.biconnectedComponent((V,EV))
 
 	if isempty(bicon_comps)
     	if (return_edge_map)
@@ -599,7 +599,7 @@ function planar_arrangement(
     	end
 	end
 #Planar_arrangement_2
-	V,copEV,FE=CPD9.Arrangement.planar_arrangement_2(V,copEV,bicon_comps,edge_map,sigma)
+	V,copEV,FE=Lar.Arrangement.planar_arrangement_2(V,copEV,bicon_comps,edge_map,sigma)
 	if (return_edge_map)
 	     return V, copEV, FE, edge_map
 	else

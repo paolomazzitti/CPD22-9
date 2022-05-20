@@ -1,5 +1,5 @@
 module Arrangement
-    using CPD9
+    using LinearAlgebraicRepresentation
     using IntervalTrees
     using NearestNeighbors
    #using Triangle
@@ -7,7 +7,7 @@ module Arrangement
 	using SparseArrays
 	using LinearAlgebra    
 	using Distributed    
-	Lar = CPD9
+	Lar = LinearAlgebraicRepresentation
 
     include("./minimal_cycles.jl")
     include("./dimension_travel.jl")

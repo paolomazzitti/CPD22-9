@@ -1,6 +1,6 @@
-#using CPD9
+#using LinearAlgebraicRepresentation
 #using SparseArrays, DataStructures, NearestNeighbors
-#Lar = CPD9
+#Lar = LinearAlgebraicRepresentation
 #using ViewerGL
 #GL = ViewerGL
 
@@ -12,7 +12,7 @@ function chaincongruence(W, Delta_0, Delta_1; epsilon=1e-6)
 	EV = sort(union(map(sort, EV)))
 	FV = cellcongruence(Delta_1 * Delta_0, vclasses, dim=2)
 	FV = sort(union(map(sort, FV)))
-	copFE = coboundary_1(FV::CPD9.Cells, EV::CPD9.Cells)
+	copFE = coboundary_1(FV::Lar.Cells, EV::Lar.Cells)
 	FE = cop2lar(copFE)
 println("\n>>>>> final output from chaincongruence\n")
 
@@ -36,7 +36,7 @@ end
 
 function cellcongruence(Delta, vclasses; dim)  # ==> OK !!!
   # cells  with old vertices
-	cellarray = CPD9.cop2lar(Delta) 
+	cellarray = Lar.cop2lar(Delta) 
 	# conversion array old -> new vertex
 	newvert = Vector(undef, size(Delta,2))
   for (k, class) in enumerate(vclasses) 
@@ -64,9 +64,9 @@ end
 
 # test elementare con cubo unitario
 
-#using CPD9
+#using LinearAlgebraicRepresentation
 #using SparseArrays, DataStructures, NearestNeighbors
-#Lar = CPD9
+#Lar = LinearAlgebraicRepresentation
 #using ViewerGL
 #GL = ViewerGL
 #
@@ -76,8 +76,8 @@ end
 #
 #
 #V,EV,FE,FV = chaincongruence(W,Delta_0,Delta_1; epsilon=1e-4);
-#EV = CPD9.removeDups(map(sort!,EV))
-#FV = CPD9.removeDups(map(sort!,FV))
+#EV = Lar.removeDups(map(sort!,EV))
+#FV = Lar.removeDups(map(sort!,FV))
 #
 #
 #@show V; # centroids of the 8  classes of W points
@@ -86,4 +86,4 @@ end
 #@show FE; # faces-by-edges
 #VV = [[v] for v=1:size(V,2)]
 ##
-#GL.VIEW(push!(GL.numbering(.5)((V,CPD9.Cells[VV,EV,FV]), GL.COLORS[1], 0.5),GL.GLFrame2));
+#GL.VIEW(push!(GL.numbering(.5)((V,Lar.Cells[VV,EV,FV]), GL.COLORS[1], 0.5),GL.GLFrame2));

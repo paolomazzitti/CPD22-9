@@ -153,15 +153,15 @@ end
 
 
 """
-	normalize(V::CPD9.Points; flag=true::Bool)::CPD9.Points
+	normalize(V::Lar.Points; flag=true::Bool)::Lar.Points
 
 2D normalization transformation (isomorphic by defaults) of model
 vertices to normalized coordinates ``[0,1]^2``. Used with SVG importing.
 """
-function normalize(V::CPD9.Points; flag=true)
+function normalize(V::Lar.Points; flag=true)
 	m,n = size(V)
 	if m > n # V by rows
-		V = convert(CPD9.Points, V')
+		V = convert(Lar.Points, V')
 	end
 
 	xmin = minimum(V[1,:]); ymin = minimum(V[2,:]);
@@ -176,19 +176,19 @@ function normalize(V::CPD9.Points; flag=true)
 			umin = 0; umax = aspectratio
 			vmin = 0; vmax = 1; ty = vmax
 		end
-		T = CPD9.t(0,ty) * CPD9.s(1,-1) * CPD9.s((umax-umin), (vmax-vmin)) *
-			CPD9.s(1/(xmax-xmin),1/(ymax-ymin)) * CPD9.t(-xmin,-ymin)
+		T = Lar.t(0,ty) * Lar.s(1,-1) * Lar.s((umax-umin), (vmax-vmin)) *
+			Lar.s(1/(xmax-xmin),1/(ymax-ymin)) * Lar.t(-xmin,-ymin)
 	else
-		# T = CPD9.t(0, ymax-ymin) * CPD9.s(1,-1)
-		T = CPD9.s(1,-1)
+		# T = Lar.t(0, ymax-ymin) * Lar.s(1,-1)
+		T = Lar.s(1,-1)
 	end
 	dim = size(V,1)
 	W = T[1:dim,:] * [V;ones(1,size(V,2))]
 	#V = map( x->round(x,digits=8), W )
-	V = map(CPD9.approxVal(8), W)
+	V = map(Lar.approxVal(8), W)
 
 	if m > n # V by rows
-		V = convert(CPD9.Points, V')
+		V = convert(Lar.Points, V')
 	end
 	return V
 end
@@ -196,13 +196,13 @@ end
 
 
 """
-	svg2lar(filename::String; flag=true)::CPD9.CPD9a
+	svg2lar(filename::String; flag=true)::Lar.LAR
 
 Parse a SVG file to a `LAR` model `(V,EV)`.
 Only  `<line >` and `<rect >` and `<path >` SVG primitives are currently translated.
 TODO:  interpretation of transformations.
 """
-function svg2lar(filename::String; flag=true)::CPD9.CPD9a
+function svg2lar(filename::String; flag=true)::Lar.LAR
 	outlines = Array{Float64,1}[]
 	matchall(r::Regex, s::AbstractString; overlap::Bool=false) =
 		collect(( m.match for m=eachmatch(r,s,overlap=overlap) ));

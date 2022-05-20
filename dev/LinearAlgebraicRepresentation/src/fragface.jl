@@ -10,8 +10,8 @@ function face_mapping( V, FV, sigma, err=10e-8 )
 	# compute affinely independent triple
 	n = length(vs)
 	succ(i) = i % n + 1
-	a = LinearAlgebra.normalize(V[:,vs[succ(i)]] - V[:,vs[i]]) # CPD9.normalize
-	b = LinearAlgebra.normalize(V[:,vs[succ(succ(i))]] - V[:,vs[i]]) # CPD9.normalize
+	a = LinearAlgebra.normalize(V[:,vs[succ(i)]] - V[:,vs[i]]) # Lar.normalize
+	b = LinearAlgebra.normalize(V[:,vs[succ(succ(i))]] - V[:,vs[i]]) # Lar.normalize
 	c = LinearAlgebra.cross(a,b)
 	while (-err < det([a b c]) < err)
 		i += 1
@@ -20,7 +20,7 @@ function face_mapping( V, FV, sigma, err=10e-8 )
 		c = LinearAlgebra.cross(a,b)
 	end
 	# sigma translation
-	T = CPD9.t(-V[:,vs[succ(i)]]...)
+	T = Lar.t(-V[:,vs[succ(i)]]...)
 	W = T * [ V[:,vs] ; ones(1,length(vs)) ]
 	t_vs = W[1:3,:]
 	# translated sigma rotation
@@ -34,7 +34,7 @@ end
 
 
 """
-	sigmamodel(V::CPD9.Points, copEV::CPD9.ChainOP, FV::CPD9.Cells, copFE::CPD9.ChainOP,
+	sigmamodel(V::Lar.Points, copEV::Lar.ChainOP, FV::Lar.Cells, copFE::Lar.ChainOP,
 		sigma::Int, sp_idx::Array)
 
 Transform `sigma` and `sp_idx[sigma]` faces to ``z=0`` space.
@@ -108,7 +108,7 @@ function sigma_intersect(V, EV, FE, sigma, Q, bigpi)
 		end
 		# TODO: linearly order facepoints[face]
 	end
-	#Plasm.view(CPD9.Struct([ (hcat(collect(edge)...), [[1,2]]) for edge in facepoints ]))
+	#Plasm.view(Lar.Struct([ (hcat(collect(edge)...), [[1,2]]) for edge in facepoints ]))
 	# compute z_lines
 	c = collect
 	z0_lines = [[[c(ps)[k] c(ps)[k+1]] for k=1:2:(length(ps)-1)] for ps in facepoints]
@@ -174,8 +174,8 @@ end
 
 
 """
-	fragface(V::CPD9.Points, EV::CPD9.Cells, FV::CPD9.Cells, FE::CPD9.Cells,
-		sp_idx::Array, sigma::Int)::CPD9.CPD9a
+	fragface(V::Lar.Points, EV::Lar.Cells, FV::Lar.Cells, FE::Lar.Cells,
+		sp_idx::Array, sigma::Int)::Lar.LAR
 
 """
 function fragface(V, cop_EV, cop_FE, sp_idx, sigma)
@@ -183,7 +183,7 @@ function fragface(V, cop_EV, cop_FE, sp_idx, sigma)
 	EV = [findnz(cop_EV[k,:])[1] for k=1:size(cop_EV,1)]
 	FE = [findnz(cop_FE[k,:])[1] for k=1:size(cop_FE,1)]
 	FV = [collect(Set(cat(EV[e] for e in FE[f]))) for f=1:length(FE)]
-	V = convert(CPD9.Points, V')
+	V = convert(Lar.Points, V')
 
 	Q = face_mapping(V, FV, sigma)
 	bigpi = sp_idx[sigma]
@@ -214,8 +214,8 @@ function fragface(V, cop_EV, cop_FE, sp_idx, sigma)
 		offset = length(verts)
 	end
 	#verts = hcat(verts...)
-	#verts = convert(CPD9.Points,verts')
-	copEV = CPD9.coboundary_0(convert(CPD9.Cells,edges))
-	copFE = CPD9.coboundary_1(verts,faces,edges)
+	#verts = convert(Lar.Points,verts')
+	copEV = Lar.coboundary_0(convert(Lar.Cells,edges))
+	copFE = Lar.coboundary_1(verts,faces,edges)
 	return verts, copEV, copFE
 end

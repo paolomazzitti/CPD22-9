@@ -1,18 +1,19 @@
-using CPD9, ViewerGL, SparseArrays
+using LinearAlgebraicRepresentation, ViewerGL, SparseArrays
+Lar = LinearAlgebraicRepresentation;
 GL = ViewerGL;
 using Base.Threads
 
 T = 3
 
 n, m, p = 1, 1, 1
-V, (VV, EV, FV, CV) = CPD9.cuboidGrid([n, m, p], true)
+V, (VV, EV, FV, CV) = Lar.cuboidGrid([n, m, p], true)
 cube = V, FV, EV
 
-assembly = CPD9.Struct([
-    CPD9.Struct([CPD9.t(rand(-0.4:0.1:0.4), rand(-0.4:0.1:0.4), rand(-0.4:0.1:0.4)), CPD9.r(rand(-0.5:0.1:0.5), 0, 0), cube]) for _ in 1:T
+assembly = Lar.Struct([
+    Lar.Struct([Lar.t(rand(-0.4:0.1:0.4), rand(-0.4:0.1:0.4), rand(-0.4:0.1:0.4)), Lar.r(rand(-0.5:0.1:0.5), 0, 0), cube]) for _ in 1:T
 ])
 
-V, FV = CPD9.struct2lar(assembly)
+V, FV = Lar.struct2lar(assembly)
 
 meshes = []
 for k = 1:length(FV)
@@ -21,7 +22,7 @@ for k = 1:length(FV)
 end
 GL.VIEW(meshes);
 
-W, (copEV, copFE, copCF), boolmatrix = CPD9.bool3d(assembly)
+W, (copEV, copFE, copCF), boolmatrix = Lar.bool3d(assembly)
 Matrix(boolmatrix)
 
 A = boolmatrix[:, 2]
@@ -38,7 +39,7 @@ xor = Matrix(copCF)' * Int.(AxorBxorC)
 or = Matrix(copCF)' * Int.(AorBorC)
 min = Matrix(copCF)' * Int.(AminBminC)
 
-V, CVs, FVs, EVs = CPD9.pols2tria(W, copEV, copFE, copCF, difference) # part of assembly
+V, CVs, FVs, EVs = Lar.pols2tria(W, copEV, copFE, copCF, difference) # part of assembly
 
 GL.VIEW(GL.GLExplode(V, FVs, 1.01, 1.01, 1.01, 99, 0.5));
 GL.VIEW(GL.GLExplode(V, EVs, 1, 1, 1, 1, 1));

@@ -1,11 +1,11 @@
-using CPD9
+using LinearAlgebraicRepresentation
 using ViewerGL, LinearAlgebra, SparseArrays, DataStructures
-Lar = CPD9; GL = ViewerGL
+Lar = LinearAlgebraicRepresentation; GL = ViewerGL
 
 
 
 """
-	numbering(::Number)(::CPD9.Points,::Vector{OrderedDict},::GL.COLORS,::Float)
+	numbering(::Number)(::Lar.Points,::Vector{OrderedDict},::GL.COLORS,::Float)
 			::Vector{ViewerGL.Viewer}
 	
 Cell numbering of (cuboidal) complexes 3D and 2D.
@@ -18,10 +18,10 @@ An use example of the below method is provided by the
 `function viewsubcomplexes`. 
 
 ```
-model = CPD9.cuboidGrid([3,4,2], true);
+model = Lar.cuboidGrid([3,4,2], true);
 GL.VIEW(GL.numbering()(model));
 
-model = CPD9.cuboidGrid([10,10], true);
+model = Lar.cuboidGrid([10,10], true);
 meshes = GL.numbering(1.5)(model);
 GL.VIEW(meshes)
 ```
@@ -50,8 +50,8 @@ function numbering(sizeScaling=1.)
 				center = sum([V[:,v] for v in cell])/length(cell)
 				code = GL.embed(1)( gcode(string(k)) )
 				scaling = (0.6+0.1h,0.6+0.1h,1)
-				push!(nums, CPD9.struct2lar( CPD9.Struct([
-						CPD9.t(center...), CPD9.s(scaling...), code ]) ))
+				push!(nums, Lar.struct2lar( Lar.Struct([
+						Lar.t(center...), Lar.s(scaling...), code ]) ))
 			end
 			for num in nums
 				mesh = GL.GLLines(num[1],num[2],colors[h])
@@ -111,8 +111,8 @@ function viewsubcomplexes(Model,ff,scaling)
 				fVV = [[v] for v in [union(FV[f]...) for f in ff][k]]
 				fEV = [EV[e] for e in ffE[k]]
 				fFV = [FV[f] for f in ff[k]]
-				#model = ( ([1 0 0.3; 0 1 0.2; 0 0 1] * V)[1:2,:], CPD9.Cells[fVV,fEV,fFV]);
-				model = (CPD9.Points(V), CPD9.Cells[fVV,fEV,fFV]); @show model;
+				#model = ( ([1 0 0.3; 0 1 0.2; 0 0 1] * V)[1:2,:], Lar.Cells[fVV,fEV,fFV]);
+				model = (Lar.Points(V), Lar.Cells[fVV,fEV,fFV]); @show model;
 				skelDict = makesubsets(Model,model)
 				GL.VIEW(push!(numbering(scaling)(V, skelDict, GL.COLORS[1], 0.5),GL.GLFrame2));
 			end

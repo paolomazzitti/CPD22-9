@@ -1,4 +1,5 @@
-using CPD9
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
 using IntervalTrees
 using SparseArrays
 using NearestNeighbors
@@ -145,16 +146,16 @@ An assembly of geometric objects is generated, and their assembly, including rot
 and translated chains, is built producing a collection of input LAR models.
 
 ```julia
-V,(_,EV,FV) = CPD9.cuboidGrid([4,4],true);
-W,(_,EW,FW) = CPD9.cuboidGrid([3,5],true);
-mycircle(r,n) = CPD9.circle(r)(n)
+V,(_,EV,FV) = Lar.cuboidGrid([4,4],true);
+W,(_,EW,FW) = Lar.cuboidGrid([3,5],true);
+mycircle(r,n) = Lar.circle(r)(n)
 
 data2d1 = (V,EV)
-data2d2 = CPD9.Struct([ CPD9.t(2,2), CPD9.r(pi/3), CPD9.t(-1.5,-2.5), (W,EW) ])
-data2d3 = CPD9.Struct([ CPD9.t(2,2), mycircle(2.5,16) ])
-data2d4 = CPD9.Struct([ CPD9.t(3.5,3.5), mycircle(.25,16) ])
-data2d5 = CPD9.Struct([ CPD9.t(5,3.5), mycircle(.5,16) ])
-data2d6 = CPD9.Struct([ CPD9.t(5,3.5), mycircle(.25,16) ])
+data2d2 = Lar.Struct([ Lar.t(2,2), Lar.r(pi/3), Lar.t(-1.5,-2.5), (W,EW) ])
+data2d3 = Lar.Struct([ Lar.t(2,2), mycircle(2.5,16) ])
+data2d4 = Lar.Struct([ Lar.t(3.5,3.5), mycircle(.25,16) ])
+data2d5 = Lar.Struct([ Lar.t(5,3.5), mycircle(.5,16) ])
+data2d6 = Lar.Struct([ Lar.t(5,3.5), mycircle(.25,16) ])
 
 model2d = input_collection( [ data2d1, data2d2, data2d3, data2d4, data2d5, data2d6 ] )
 V,EV = model2d
@@ -167,15 +168,15 @@ Note that `V,EV` is not a cellular complex, since 1-cells intersect out of 0-cel
 # Example 3D
 
 ```julia
-V,FV = CPD9.sphere(2)([3,4])
-EV = CPD9.simplexFacets(FV)
+V,FV = Lar.sphere(2)([3,4])
+EV = Lar.simplexFacets(FV)
 mysphere = V,FV,EV
 
 data3d1 = mysphere
-data3d2 = CPD9.Struct([ CPD9.t(0,1,0), mysphere ])
-data3d3 = CPD9.Struct([ CPD9.t(0,0.5,0), CPD9.s(0.4,0.4,0.4), mysphere ])
-data3d4 = CPD9.Struct([ CPD9.t(4,0,0), CPD9.s(0.8,0.8,0.8), mysphere ])
-data3d5 = CPD9.Struct([ CPD9.t(4,0,0), CPD9.s(0.4,0.4,0.4), mysphere ])
+data3d2 = Lar.Struct([ Lar.t(0,1,0), mysphere ])
+data3d3 = Lar.Struct([ Lar.t(0,0.5,0), Lar.s(0.4,0.4,0.4), mysphere ])
+data3d4 = Lar.Struct([ Lar.t(4,0,0), Lar.s(0.8,0.8,0.8), mysphere ])
+data3d5 = Lar.Struct([ Lar.t(4,0,0), Lar.s(0.4,0.4,0.4), mysphere ])
 
 model3d = input_collection([ data3d1, data3d2, data3d3, data3d4, data3d5 ])
 V,FV,EV = model3d
@@ -188,12 +189,12 @@ Note that `V,FV,EV` is not a cellular complex, since 1-cells and
 2-cells intersect out of 0-cells.
 
 """
-function input_collection(data::Array)::CPD9.CPD9a
-	assembly = CPD9.Struct(data)
-	return CPD9.struct2lar(assembly)
+function input_collection(data::Array)::Lar.LAR
+	assembly = Lar.Struct(data)
+	return Lar.struct2lar(assembly)
 end
 
-function boundingbox(vertices::CPD9.Points)
+function boundingbox(vertices::Lar.Points)
    minimum = mapslices(x->min(x...), vertices, dims=2)
    maximum = mapslices(x->max(x...), vertices, dims=2)
    return minimum, maximum
@@ -226,7 +227,7 @@ end
 
 
 """
-	spaceindex(model::CPD9.CPD9a)::Array{Array{Int,1},1}
+	spaceindex(model::Lar.LAR)::Array{Array{Int,1},1}
 
 Generation of *space indexes* for all ``(d-1)``-dim cell members of `model`.
 
@@ -247,7 +248,7 @@ julia> V = hcat([[0.,0],[1,0],[1,1],[0,1],[2,1]]...);
 
 julia> EV = [[1,2],[2,3],[3,4],[4,1],[1,5]];
 
-julia> Sigma = CPD9.spaceindex((V,EV))
+julia> Sigma = Lar.spaceindex((V,EV))
 5-element Array{Array{Int64,1},1}:
  [4, 5, 2]
  [1, 3, 5]
@@ -270,14 +271,14 @@ Sigma =  spaceindex(model3d);
 Sigma
 ```
 """
-function spaceindex(model::CPD9.CPD9a)::Array{Array{Int,1},1}
+function spaceindex(model::Lar.LAR)::Array{Array{Int,1},1}
 	V,CV = model[1:2]
 	dim = size(V,1)
-	cellpoints = [ V[:,CV[k]]::CPD9.Points for k=1:length(CV) ]
+	cellpoints = [ V[:,CV[k]]::Lar.Points for k=1:length(CV) ]
 	#----------------------------------------------------------
-	bboxes = [hcat(CPD9.boundingbox(cell)...) for cell in cellpoints]
-	xboxdict = CPD9.coordintervals(1,bboxes)
-	yboxdict = CPD9.coordintervals(2,bboxes)
+	bboxes = [hcat(Lar.boundingbox(cell)...) for cell in cellpoints]
+	xboxdict = Lar.coordintervals(1,bboxes)
+	yboxdict = Lar.coordintervals(2,bboxes)
 	# xs,ys are IntervalTree type
 	xs = IntervalTrees.IntervalMap{Float64, Array}()
 	for (key,boxset) in xboxdict
@@ -287,17 +288,17 @@ function spaceindex(model::CPD9.CPD9a)::Array{Array{Int,1},1}
 	for (key,boxset) in yboxdict
 		ys[tuple(key...)] = boxset
 	end
-	xcovers = CPD9.boxcovering(bboxes, 1, xs)
-	ycovers = CPD9.boxcovering(bboxes, 2, ys)
+	xcovers = Lar.boxcovering(bboxes, 1, xs)
+	ycovers = Lar.boxcovering(bboxes, 2, ys)
 	covers = [intersect(pair...) for pair in zip(xcovers,ycovers)]
 
 	if dim == 3
-		zboxdict = CPD9.coordintervals(3,bboxes)
+		zboxdict = Lar.coordintervals(3,bboxes)
 		zs = IntervalTrees.IntervalMap{Float64, Array}()
 		for (key,boxset) in zboxdict
 			zs[tuple(key...)] = boxset
 		end
-		zcovers = CPD9.boxcovering(bboxes, 3, zs)
+		zcovers = Lar.boxcovering(bboxes, 3, zs)
 		covers = [intersect(pair...) for pair in zip(zcovers,covers)]
 	end
 	# remove each cell from its cover
@@ -330,7 +331,7 @@ julia> line2 = [[2.,0], [0,3]]
  [2.0, 0.0]
  [0.0, 3.0]
 
-julia> CPD9.intersection(line1,line2)
+julia> Lar.intersection(line1,line2)
 (0.8571428571428571, 0.5714285714285714)
 ```
 """
@@ -372,7 +373,7 @@ julia> V = hcat([[0.,0],[1,0],[1,1],[0,1],[2,1]]...);
 
 julia> EV = [[1,2],[2,3],[3,4],[4,1],[1,5]];
 
-julia> Sigma = CPD9.spaceindex((V,EV))
+julia> Sigma = Lar.spaceindex((V,EV))
 5-element Array{Array{Int64,1},1}:
  [4, 5, 2]
  [1, 3, 5]
@@ -380,7 +381,7 @@ julia> Sigma = CPD9.spaceindex((V,EV))
  [1, 3, 5]
  [4, 1, 3, 2]
 
-julia> CPD9.linefragments(V,EV,Sigma)
+julia> Lar.linefragments(V,EV,Sigma)
 5-element Array{Any,1}:
  [0.0, 1.0]
  [0.0, 0.5, 1.0]
@@ -401,7 +402,7 @@ function linefragments(V,EV,Sigma)
 			line1 = V[:,EV[h]]
 			for k in sigma[h]
 				line2 = V[:,EV[k]]
-				out = CPD9.intersection(line1,line2) # TODO: w interval arithmetic
+				out = Lar.intersection(line1,line2) # TODO: w interval arithmetic
 				if out ≠ nothing
 					α,β = out
 					if 0<=α<=1 && 0<=β<=1
@@ -425,7 +426,7 @@ end
 
 
 """
-	fragmentlines(model::CPD9.CPD9a)::CPD9.CPD9a
+	fragmentlines(model::Lar.LAR)::Lar.LAR
 
 Pairwise *intersection* of 2D *line segments*.
 
@@ -433,7 +434,7 @@ Pairwise *intersection* of 2D *line segments*.
 
 ```julia
 V,EV = model2d
-W, EW = CPD9.fragmentlines(model2d) # OK
+W, EW = Lar.fragmentlines(model2d) # OK
 using Plasm
 Plasm.viewexploded(W,EW)(1.2,1.2,1.2)
 ```
@@ -441,9 +442,9 @@ Plasm.viewexploded(W,EW)(1.2,1.2,1.2)
 function fragmentlines(model)
 	V,EV = model
 	# acceleration via spatial index computation
-	Sigma = CPD9.spaceindex(model)
+	Sigma = Lar.spaceindex(model)
 	# actual parametric intersection of each line with the close ones
-	lineparams = CPD9.linefragments(V,EV,Sigma)
+	lineparams = Lar.linefragments(V,EV,Sigma)
 	# initialization of local data structures
 	vertdict = OrderedDict{Array{Float64,1},Array{Int,1}}()
 	pairs = collect(zip(lineparams, [V[:,e] for e in EV]))
@@ -460,7 +461,7 @@ function fragmentlines(model)
 		PRECISION = 8
 		# identification via dictionary of points
 		for (h,point) in enumerate(points)
-			point = map(CPD9.approxVal(PRECISION), point)
+			point = map(Lar.approxVal(PRECISION), point)
 			if haskey(vertdict, point) == false
 				k += 1
 				vertdict[point] = k
@@ -472,12 +473,12 @@ function fragmentlines(model)
 	end
 	# normalization of output
 	W,EW = hcat(W...),convert(Array{Array{Int64,1},1},EW)
-	V,EV = CPD9.congruence((W,EW))
+	V,EV = Lar.congruence((W,EW))
 	return V,EV
 end
 function fraglines(sx::Float64=1.2,sy::Float64=1.2,sz::Float64=1.2)
 	function fraglines0(model)
-		V,EV = CPD9.fragmentlines(model)
+		V,EV = Lar.fragmentlines(model)
 
 		W = zeros(Float64, size(V,1), 2*length(EV))
 		EW = Array{Array{Int64,1},1}()
@@ -503,7 +504,7 @@ end
 
 
 """
-	congruence(model::CPD9.CPD9a)::CPD9.CPD9a
+	congruence(model::Lar.LAR)::Lar.LAR
 Graded bases of equivalence classes Ck (Uk ), with Uk = Xk /Rk for 0 ≤ k ≤ 2.
 
 # Example
@@ -537,8 +538,8 @@ function congruence(model)
 		end
 	end
 	EV = [EV[h] for h=1:length(EV) if length(EV[h])==2]
-	EV = convert(CPD9.Cells, EV)
-	#W,EW = CPD9.simplifyCells(V,EV)
+	EV = convert(Lar.Cells, EV)
+	#W,EW = Lar.simplifyCells(V,EV)
 	return hcat(V...),EV
 end
 
@@ -564,10 +565,10 @@ model = model3d
 
 ```
 """
-function decomposition(model::CPD9.CPD9a)
+function decomposition(model::Lar.LAR)
 	V,EV = model
 	dim = size(V,1)
-	spatialindex = CPD9.spaceindex(model)
+	spatialindex = Lar.spaceindex(model)
 
 	function submanifoldmap(vs)
 		centroid = [sum(vs[k,:]) for k=1:size(vs,1)]/size(vs,2)

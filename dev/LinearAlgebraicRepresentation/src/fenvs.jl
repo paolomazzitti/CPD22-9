@@ -1,5 +1,5 @@
-using CPD9
-Lar = CPD9
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
 import Base.cat
 using DataStructures
 
@@ -19,23 +19,23 @@ function apply(fun::Function)
 end
 
 """
-	apply(affineMatrix::Matrix)(larmodel::CPD9)::CPD9
+	apply(affineMatrix::Matrix)(larmodel::LAR)::LAR
 
 Apply the `affineMatrix` parameter to the vertices of `larmodel`.
 
 # Example
 
 ```
-julia> square = CPD9.cuboid([1,1])
+julia> square = Lar.cuboid([1,1])
 ([0.0 0.0 1.0 1.0; 0.0 1.0 0.0 1.0], Array{Int64,1}[[1, 2, 3, 4]])
 
-julia> CPD9.apply(CPD9.t(1,2))(square)
+julia> Lar.apply(Lar.t(1,2))(square)
 ([1.0 1.0 2.0 2.0; 2.0 3.0 2.0 3.0], Array{Int64,1}[[1, 2, 3, 4]])
 ```
 """
 function apply(affineMatrix)
 	function apply0(larmodel)
-		return CPD9.struct2lar(CPD9.Struct([ affineMatrix,larmodel ]))
+		return Lar.struct2lar(Lar.Struct([ affineMatrix,larmodel ]))
 	end
 	return apply0
 end
@@ -70,7 +70,7 @@ applications of component functions to actual parameter.
 # Example
 
 ```
-julia> CPD9.cons([cos,sin])(0)
+julia> Lar.cons([cos,sin])(0)
 2-element Array{Float64,1}:
  1.0
  0.0
@@ -93,10 +93,10 @@ when applied to another parameter.
 #	Examples
 
 ```
-julia> CPD9.k(10)(100)
+julia> Lar.k(10)(100)
 10
 
-julia> CPD9.k(sin)(cos)
+julia> Lar.k(sin)(cos)
 sin
 ```
 """
@@ -113,7 +113,7 @@ AA applies fun to each element of the args sequence
 # Example
 
 ```
-julia> CPD9.aa(sqrt)([1,4,9,16])
+julia> Lar.aa(sqrt)([1,4,9,16])
 4-element Array{Float64,1}:
  1.0
  2.0
@@ -150,7 +150,7 @@ Return the `pair` array with the elements of `args` coupled with `x`
 # Example
 
 ```
-julia> CPD9.distr(([1,2,3],10))
+julia> Lar.distr(([1,2,3],10))
 3-element Array{Array{Int64,1},1}:
  [1, 10]
  [2, 10]
@@ -174,7 +174,7 @@ Return the `pair` array with `x` coupled with the elements of `args`.
 # Example
 
 ```
-julia> CPD9.distl((10, [1,2,3]))
+julia> Lar.distl((10, [1,2,3]))
 3-element Array{Array{Int64,1},1}:
  [10, 1]
  [10, 2]

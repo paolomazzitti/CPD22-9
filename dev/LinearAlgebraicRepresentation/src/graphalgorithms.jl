@@ -4,16 +4,16 @@
 #---------------------------------------------------------------------
 
 """ 
-	verts2verts(EV::CPD9.Cells)::CPD9.Cells
+	verts2verts(EV::Lar.Cells)::Lar.Cells
 
 Adjacency lists of vertices of a cellular 1-complex.
 
 # Example
 
 ```julia 
-julia> V,(VV,EV,FV) = CPD9.cuboidGrid([3,3],true);
+julia> V,(VV,EV,FV) = Lar.cuboidGrid([3,3],true);
 
-julia> verts2verts(EV::CPD9.Cells)::CPD9.Cells
+julia> verts2verts(EV::Lar.Cells)::Lar.Cells
 16-element Array{Array{Int64,1},1}:
  [2, 5]         
  [1, 3, 6]      
@@ -33,9 +33,9 @@ julia> verts2verts(EV::CPD9.Cells)::CPD9.Cells
  [12, 15]       
 ```
 """
-function verts2verts(EV::CPD9.Cells)::CPD9.Cells
-    cscEV = CPD9.characteristicMatrix(EV)
-    cscVE = convert(CPD9.ChainOp, cscEV')
+function verts2verts(EV::Lar.Cells)::Lar.Cells
+    cscEV = Lar.characteristicMatrix(EV)
+    cscVE = convert(Lar.ChainOp, cscEV')
     cscVV = cscVE * cscEV   
     rows,cols,data = findnz(cscVV)
     VV = [ findnz(cscVV[k,:])[1] for k=1:size(cscVV,2) ]
@@ -49,7 +49,7 @@ end
 
 Hopcroft-Tarjan algorithm. Depth-First-Visit recursive algorithm.
 """
-function DFV_visit( VV::CPD9.Cells, out::Array, count::Int, visited::Array, parent::Array, d::Array, low::Array, stack::Array, u::Int )::Array
+function DFV_visit( VV::Lar.Cells, out::Array, count::Int, visited::Array, parent::Array, d::Array, low::Array, stack::Array, u::Int )::Array
 		
     visited[u] = true
     count += 1
@@ -117,7 +117,7 @@ julia> Plasm.view( Plasm.numbering(3)((V,[VV, EV])) )
 ```julia
 model = (V,EV)
 V,EVs = biconnectedComponent(model)
-EW = convert(CPD9.Cells, union(EVs...))
+EW = convert(Lar.Cells, union(EVs...))
 Plasm.view( Plasm.numbering(3)((V,[VV,EW])) )
 ```
 
@@ -129,15 +129,15 @@ V = [0. 1  0  0 -1;
 EV = [[1,2],[2,3],[1,4],[4,5],[5,1],[1,3]  ,[2,4]]
 model = (V,EV)
 Plasm.view( Plasm.numbering(1)((V,[[[k] for k=1:size(V,2)],EV])) )
-V,EVs = CPD9.biconnectedComponent(model)
+V,EVs = Lar.biconnectedComponent(model)
 
-cscEV = CPD9.characteristicMatrix(EV)
-biconcomp = CPD9.Arrangement.biconnected_components(cscEV)
+cscEV = Lar.characteristicMatrix(EV)
+biconcomp = Lar.Arrangement.biconnected_components(cscEV)
 
-Matrix(CPD9.characteristicMatrix(EV))
+Matrix(Lar.characteristicMatrix(EV))
 
 V,EVs = biconnectedComponent(model)
-EW = convert(CPD9.Cells, union(EVs...))
+EW = convert(Lar.Cells, union(EVs...))
 Plasm.view( Plasm.numbering(.3)((V,[VV,EW])) )
 ```
 
@@ -151,7 +151,7 @@ function biconnectedComponent(model)
     parent = Union{Int, Array{Any,1}}[[] for v in V]
     d = Any[0 for v in V]
     low = Any[0 for v in V]    
-    VV = CPD9.verts2verts(EV)
+    VV = Lar.verts2verts(EV)
     out = Any[]
     for u in V 
         if ! visited[u] 
@@ -169,7 +169,7 @@ end
 
 
 """
-	depth_first_search(EV::CPD9.Cells [, start::Int=1])::Tuple{CPD9.Cells, CPD9.Cells}
+	depth_first_search(EV::Lar.Cells [, start::Int=1])::Tuple{Lar.Cells, Lar.Cells}
 
 *Depth-First-Search algorithm* (Tarjan, 1972) to compute a *spanning tree* of an undirected graph. The graph is entered as an array of edges, given as an array `EV` of 1-cells. Complexity linear in the number of nodes and edges: O(V, E).
 
@@ -188,10 +188,10 @@ julia> depth_first_search(EV)
 (Array{Int64,1}[[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [5, 8]], Array{Int64,1}[[6, 1], [7, 2], [7, 4], [8, 1], [8, 3]])
 ```
 """
-function depth_first_search(EV::CPD9.Cells, start::Int=1)::
-		Tuple{CPD9.Cells, CPD9.Cells}
+function depth_first_search(EV::Lar.Cells, start::Int=1)::
+		Tuple{Lar.Cells, Lar.Cells}
 	# initialize the data structures and start DFS
-    VV = CPD9.verts2verts(EV)
+    VV = Lar.verts2verts(EV)
     spanningtree = Array{Int,1}[];  
     fronds = Array{Int,1}[]
 	number = zeros(Int, length(VV))
@@ -214,12 +214,12 @@ function depth_first_search(EV::CPD9.Cells, start::Int=1)::
 	# initialization of DFS algorithm
 	i = 1
 	DFS(start, 1)
-	return spanningtree::CPD9.Cells, fronds::CPD9.Cells
+	return spanningtree::Lar.Cells, fronds::Lar.Cells
 end
 
 
 """
-	edge_biconnect(EV::CPD9.Cells)
+	edge_biconnect(EV::Lar.Cells)
 	
 Compute maximal 2-edge-connected components of an undirected graph.
 
@@ -231,7 +231,7 @@ EV = [[3,4],[2,4],[2,3],[2,5],[1,2],[5,6],[1,6],[1,7],[7,9],[8,9],[7,8]]
 using Plasm
 Plasm.view( Plasm.numbering(1.3)((V,[[[k] for k=1:size(V,2)], EV])) )
 
-julia> edge_biconnect(EV::CPD9.Cells)
+julia> edge_biconnect(EV::Lar.Cells)
 4-element Array{Array{Array{Int64,1},1},1}:
  [[4, 2], [3, 4], [2, 3]]        
  [[6, 1], [5, 6], [2, 5], [1, 2]]
@@ -244,17 +244,17 @@ julia> V = hcat([[0,4],[4,4],[4,0],[2,0],[0,0],[2,2],[1,2],[3,2],[1,3],[3,3]]...
 julia> EV = [[1,2],[9,10],[1,5],[7,9],[8,10],[2,3],[6,7],[6,8],[4,6],[4,5],[3,4]]
 julia> Plasm.view( Plasm.numbering(1.3)((V,[[[k] for k=1:size(V,2)], EV])) )
 
-julia> EVs = edge_biconnect(EV::CPD9.Cells)
+julia> EVs = edge_biconnect(EV::Lar.Cells)
 3-element Array{Array{Array{Int64,1},1},1}:
  [[8, 6], [10, 8], [9, 10], [7, 9], [6, 7]]
  [[4, 6]]                                  
  [[5, 1], [4, 5], [3, 4], [2, 3], [1, 2]]  
 
-julia> map(CPD9.depth_first_search, EVs)
+julia> map(Lar.depth_first_search, EVs)
 ```
 """
-function edge_biconnect(EV::CPD9.Cells)
-    VV = CPD9.verts2verts(EV)
+function edge_biconnect(EV::Lar.Cells)
+    VV = Lar.verts2verts(EV)
 	number = zeros(Int, length(VV))
 	lowpt = zeros(Int, length(VV))
 	components = Array{Array{Int,1},1}[]

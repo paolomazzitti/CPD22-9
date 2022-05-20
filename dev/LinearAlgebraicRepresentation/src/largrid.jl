@@ -1,4 +1,4 @@
-Lar = CPD9
+Lar = LinearAlgebraicRepresentation
 using DataStructures
 
 
@@ -7,14 +7,14 @@ using DataStructures
 
 FL primitive combinator to transform a binary function to an n-ary one.
 ```
-julia> mod1D = CPD9.grid(repeat([.1,-.1],outer=5)...)
+julia> mod1D = Lar.grid(repeat([.1,-.1],outer=5)...)
 ([0.0 0.1 … 0.9 1.0], Array{Int64,1}[[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
 
 julia> using ViewerGL; GL = ViewerGL
 
 julia> GL.VIEW([ GL.GLFrame2, GL.GLGrid(mod1D..., GL.COLORS[1],1) ])
 
-julia> mod3D = CPD9.INSR(CPD9.larModelProduct)([mod1D,mod1D,mod1D])
+julia> mod3D = Lar.INSR(Lar.larModelProduct)([mod1D,mod1D,mod1D])
 ([0.0 0.0 … 1.0 1.0; 0.0 0.0 … 1.0 1.0; 0.0 0.1 … 0.9 1.0],
 Array{Int64,1}[[1, 2, 12, 13, 122, 123, 133, 134], [3, 4, 14, 15, 124, 125, 135, 136],
 … [1063, 1064, 1074, 1075, 1184, 1185, 1195, 1196], [1065, 1066, 1076, 1077, 1186, 1187, 1197, 1198]])
@@ -37,14 +37,14 @@ end
 
 
 """
-	grid(sequence::Array{Number,1})::CPD9.CPD9a
+	grid(sequence::Array{Number,1})::Lar.LAR
 
 Generate a 1D LAR model.
 
 *Geometry* is stored as 1D `Points`, and *Topology* is stored as 1D `Cells`.
 `q()` and `q()()` are used as alias function name.
 ```julia
-julia> model1D = CPD9.grid(1,-1,1,-1,1,-1,1,-1,1,-1)
+julia> model1D = Lar.grid(1,-1,1,-1,1,-1,1,-1,1,-1)
 ([0.0 1.0 … 9.0 10.0], Array{Int64,1}[[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
 
 julia> model1D[1]
@@ -59,7 +59,7 @@ julia> model1D[2]
  [7, 8]
  [9, 10]
 
- julia> mod = CPD9.grid(repeat([.1,-.1],outer=5)...)
+ julia> mod = Lar.grid(repeat([.1,-.1],outer=5)...)
  ([0.0 0.1 … 0.9 1.0], Array{Int64,1}[[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
 ```
 """
@@ -73,26 +73,26 @@ function grid(sequence...)
 		end
 	  cursor += abs(value)
 	end
-	V = convert(CPD9.Points, [p[1] for p in points]')
-	EV = convert(CPD9.Cells,hulls)
+	V = convert(Lar.Points, [p[1] for p in points]')
+	EV = convert(Lar.Cells,hulls)
 	return V,EV
 end
 const q = grid
 
 
 """
-	qn(n::Int)(sequence::Array{T,1})::CPD9.CPD9a  where T <: Real
+	qn(n::Int)(sequence::Array{T,1})::Lar.LAR  where T <: Real
 
 Alias of `grid` function, with repetition parameter `n`.
 ```
-julia> CPD9.qn(3)([1.5,-2,0.5])
+julia> Lar.qn(3)([1.5,-2,0.5])
 ([0.0 1.5 … 11.5 12.0], Array{Int64,1}[[1, 2], [3, 4], [4, 5], [6, 7], [7, 8], [9, 10]])
 ```
 """
 function qn(n::Int)
-	function qn0(sequence::Array{T,1})::CPD9.CPD9a  where T <: Real
+	function qn0(sequence::Array{T,1})::Lar.LAR  where T <: Real
 		sequence = collect(sequence)
-		return CPD9.grid(repeat(sequence,outer=n)...)
+		return Lar.grid(repeat(sequence,outer=n)...)
 	end
 	return qn0
 end
@@ -219,11 +219,11 @@ julia> larVertProd([ larGrid(3)(0), larGrid(4)(0) ])
 ```
 """
 function larVertProd(vertLists::Array{Array{Int64,2},1})::Array{Int64,2}
-   coords = [[x[1] for x in v] for v in CPD9.cart(vertLists)]
+   coords = [[x[1] for x in v] for v in Lar.cart(vertLists)]
    return sortslices(hcat(coords...), dims=2)
 end
 function larVertProd(vertLists::Array{Array{Float64,2},1})::Array{Float64,2}
-   coords = [[x[1] for x in v] for v in CPD9.cart(vertLists)]
+   coords = [[x[1] for x in v] for v in Lar.cart(vertLists)]
    return sortslices(hcat(coords...), dims=2)
 end
 
@@ -362,7 +362,7 @@ julia> filterByOrder(3)
  Array{Int8,1}[Int8[1, 1, 1]]
 ```"""
 function filterByOrder(n::Int)Array{Array{Array{Int8,1},1},1}
-   terms = [[parse(Int8,bit) for bit in collect(term)] for term in CPD9.binaryRange(n)]
+   terms = [[parse(Int8,bit) for bit in collect(term)] for term in Lar.binaryRange(n)]
    return [[term for term in terms if sum(term) == k] for k in 0:n]
 end
 
@@ -378,22 +378,22 @@ Produce the `d`-dimensional skeleton (set of `d`-cells) of a cuboidal grid of gi
 A `shape=[1,1,1]` parameter refers to a *grid* with a single step on the three axes, i.e. to a single *3D unit cube*. Below all *skeletons* of such simplest grid are generated.
 
 ```julia
-julia> CPD9.larGridSkeleton([1,1,1])(0)
+julia> Lar.larGridSkeleton([1,1,1])(0)
 # output
 8-element Array{Array{Int64,1},1}:
 [[1], [2], [3], [4], [5], [6], [7], [8]]
 
-julia> CPD9.larGridSkeleton([1,1,1])(1)
+julia> Lar.larGridSkeleton([1,1,1])(1)
 # output
 12-element Array{Array{Int64,1},1}:
 [[1,2],[3,4],[5,6],[7,8],[1,3],[2,4],[5,7],[6,8],[1,5],[2,6],[3,7],[4,8]]
 
-julia> CPD9.larGridSkeleton([1,1,1])(2)
+julia> Lar.larGridSkeleton([1,1,1])(2)
 # output
 6-element Array{Array{Int64,1},1}:
 [[1,2,3,4], [5,6,7,8], [1,2,5,6], [3,4,7,8], [1,3,5,7], [2,4,6,8]]
 
-julia> CPD9.larGridSkeleton([1,1,1])(3)
+julia> Lar.larGridSkeleton([1,1,1])(3)
 # output
 1-element Array{Array{Int64,1},1}:
  [1, 2, 3, 4, 5, 6, 7, 8]

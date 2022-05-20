@@ -1,5 +1,5 @@
-using CPD9
-Lar = CPD9
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
 using SparseArrays
 
 
@@ -119,11 +119,11 @@ function build_copFC(rV, rcopEV, rcopFE)
 #function build_copFC(V,FV,EV,copFE)
 
 	# G&F -> Pao data structures
-	V = convert(CPD9.Points, rV')
-	EV = CPD9.cop2lar(rcopEV)
-	fe = CPD9.cop2lar(rcopFE)
+	V = convert(Lar.Points, rV')
+	EV = Lar.cop2lar(rcopEV)
+	fe = Lar.cop2lar(rcopFE)
 	fv = [union([EV[e] for e in fe[f]]...) for f=1:length(fe)]
-	FV = convert(CPD9.Cells, fv)
+	FV = convert(Lar.Cells, fv)
 	copFE = rcopFE
 VV = [[v] for v=1:size(V,2)]
 model = (V, [VV,EV,FV])
@@ -166,11 +166,11 @@ model = (V, [VV,EV,FV])
 					error("no pivot")
 				end
 				# compute the new adj cell
-				fan = CPD9.ord(abs(τ),bd1,V,FV,EV,FE) # ord(pivot,bd1)
+				fan = Lar.ord(abs(τ),bd1,V,FV,EV,FE) # ord(pivot,bd1)
 				if τ > 0
-					adj = CPD9.mynext(fan,pivot)
+					adj = Lar.mynext(fan,pivot)
 				elseif τ < 0
-					adj = CPD9.myprev(fan,pivot)
+					adj = Lar.myprev(fan,pivot)
 				end
 				# orient adj
 				if copEF[abs(τ),adj] ≠ copEF[abs(τ),pivot]
@@ -280,8 +280,8 @@ end
 
 Merge two **2-skeletons**
 """
-function skel_merge(V1::CPD9.Points, EV1::CPD9.ChainOp, FE1::CPD9.ChainOp,
-					V2::CPD9.Points, EV2::CPD9.ChainOp, FE2::CPD9.ChainOp)
+function skel_merge(V1::Lar.Points, EV1::Lar.ChainOp, FE1::Lar.ChainOp,
+					V2::Lar.Points, EV2::Lar.ChainOp, FE2::Lar.ChainOp)
     FE = blockdiag(FE1,FE2)
     V, EV = skel_merge(V1, EV1, V2, EV2)
     return V, EV, FE
@@ -411,8 +411,8 @@ end
 
 The signed `ChainOp` from 1-cells (edges) to 2-cells (faces)
 """
-function build_copFE(FV::CPD9.Cells, EV::CPD9.Cells)
-	copFE = CPD9.u_coboundary_1(FV, EV) # unsigned
+function build_copFE(FV::Lar.Cells, EV::Lar.Cells)
+	copFE = Lar.u_coboundary_1(FV, EV) # unsigned
 	faceedges = [findnz(copFE[f,:])[1] for f=1:size(copFE,1)]
 
 	f_edgepairs = Array{Array{Int64,1}}[]
@@ -495,13 +495,13 @@ function vequals(v1, v2)
 end
 
 
-function vcycle( copEV::CPD9.ChainOp, copFE::CPD9.ChainOp, f::Int64 )
+function vcycle( copEV::Lar.ChainOp, copFE::Lar.ChainOp, f::Int64 )
 	edges,signs = SparseArrays.findnz(copFE[f,:])
 	vpairs = [s>0 ? SparseArrays.findnz(copEV[e,:])[1] :
 					reverse(SparseArrays.findnz(copEV[e,:])[1])
 				for (e,s) in zip(edges,signs)]
 	a = [pair for pair in vpairs if length(pair)==2]
-	function mycat(a::CPD9.Cells)
+	function mycat(a::Lar.Cells)
 		out=[]
 		for cell in a append!(out,cell) end
 		return out
@@ -514,11 +514,11 @@ end
 
 
 """
-    triangulate(model::CPD9.model)
+    triangulate(model::LARmodel)
 
 Full constrained Delaunnay triangulation of the given 3-dimensional `LARmodel`
 """
-function triangulate(model::CPD9model)
+function triangulate(model::LARmodel)
     V, topology = model
     cc = build_cops(topology...)
     return triangulate(V, cc)
@@ -529,7 +529,7 @@ end
 
 Full constrained Delaunnay triangulation of the given 3-dimensional model (given with topology as a `ChainComplex`)
 """
-function triangulate(V::CPD9.Points, cc::CPD9.ChainComplex)
+function triangulate(V::Lar.Points, cc::Lar.ChainComplex)
 	copEV, copFE = cc[1:2]
 
     triangulated_faces = Array{Any, 1}(undef, copFE.m)
@@ -543,8 +543,8 @@ function triangulate(V::CPD9.Points, cc::CPD9.ChainComplex)
         edge_num = length(edges_idxs)
         edges = zeros(Int64, edge_num, 2)
 
-        #fv = CPD9.buildFV(copEV, copFE[f, :])
-        fv, edges = CPD9.vcycle(copEV, copFE, f)
+        #fv = Lar.buildFV(copEV, copFE[f, :])
+        fv, edges = Lar.vcycle(copEV, copFE, f)
 		if fv ≠ []
 			vs = V[fv, :]
 	        v1 = LinearAlgebra.normalize(vs[2, :] - vs[1, :])
@@ -559,7 +559,7 @@ function triangulate(V::CPD9.Points, cc::CPD9.ChainComplex)
 	        end
 	        M = reshape([v1; v2; v3], 3, 3)
 	        vs = (vs*M)[:, 1:2]
-			v = convert(CPD9.Points, vs'[1:2,:])
+			v = convert(Lar.Points, vs'[1:2,:])
 			vmap = Dict(zip(fv,1:length(fv))) # vertex map
 			mapv = Dict(zip(1:length(fv),fv)) # inverse vertex map
 
@@ -689,11 +689,11 @@ Use this function to export LAR models into OBJ
 	[[1,2,3,4],[5,6,7,8],[1,2,5,6],[3,4,7,8],[1,3,5,7],[2,4,6,8]],
 	[[1,2],[3,4],[5,6],[7,8],[1,3],[2,4],[5,7],[6,8],[1,5],[2,6],[3,7],[4,8]] )
 
-	julia> cube_2 = CPD9.Struct([CPD9.t(0,0,0.5), CPD9.r(0,0,pi/3), cube_1])
+	julia> cube_2 = Lar.Struct([Lar.t(0,0,0.5), Lar.r(0,0,pi/3), cube_1])
 
-	julia> V, FV, EV = CPD9.struct2lar(CPD9.Struct([ cube_1, cube_2 ]))
+	julia> V, FV, EV = Lar.struct2lar(Lar.Struct([ cube_1, cube_2 ]))
 
-	julia> V, bases, coboundaries = CPD9.chaincomplex(V,FV,EV)
+	julia> V, bases, coboundaries = Lar.chaincomplex(V,FV,EV)
 
 	julia> (EV, FV, CV), (copEV, copFE, copCF) = bases, coboundaries
 
@@ -733,17 +733,17 @@ Use this function to export LAR models into OBJ
 	julia> copCF # coboundaries[3]
 	4×18 SparseMatrixCSC{Int8,Int64} with 36 stored entries: ...
 
-	objs = CPD9.lar2obj(V'::CPD9.Points, [coboundaries...])
+	objs = Lar.lar2obj(V'::Lar.Points, [coboundaries...])
 
 	open("./two_cubes.obj", "w") do f
     	write(f, objs)
 	end
 ```
 """
-function lar2obj(V::CPD9.Points, cc::CPD9.ChainComplex)
+function lar2obj(V::Lar.Points, cc::Lar.ChainComplex)
     copEV, copFE, copCF = cc
 	if size(V,2) > 3
-		V = convert(CPD9.Points, V') # out V by rows
+		V = convert(Lar.Points, V') # out V by rows
 	end
     obj = ""
     for v in 1:size(V, 1)
@@ -754,7 +754,7 @@ function lar2obj(V::CPD9.Points, cc::CPD9.ChainComplex)
     end
 
     print("Triangulating")
-    triangulated_faces = CPD9.triangulate(V, cc[1:2])
+    triangulated_faces = Lar.triangulate(V, cc[1:2])
     println("DONE")
 
     for c in 1:copCF.m
@@ -773,11 +773,11 @@ function lar2obj(V::CPD9.Points, cc::CPD9.ChainComplex)
 end
 
 """
-	lar2obj(V::CPD9.Points, TV::CPD9.Cells)::String
+	lar2obj(V::Lar.Points, TV::Lar.Cells)::String
 ```
 ```
 """
-function lar2obj(V::CPD9.Points, TV::CPD9.Cells)
+function lar2obj(V::Lar.Points, TV::Lar.Cells)
 	obj = ""
     for v in 1:size(V, 1)
         obj = string(obj, "v ",
@@ -845,7 +845,7 @@ function obj2lar(path)
     end
 
 	#return vs, build_cops(edges, faces)
-	return convert(CPD9.Points, vs'), edges[2:end], faces[2:end]
+	return convert(Lar.Points, vs'), edges[2:end], faces[2:end]
 end
 
 """
@@ -861,9 +861,9 @@ end
 function space_arrangement(V::Points, EV::ChainOp, FE::ChainOp, multiproc::Bool=false)
 
     fs_num = size(FE, 1)
-    sp_idx = CPD9.Arrangement.spatial_index(V, EV, FE)
+    sp_idx = Lar.Arrangement.spatial_index(V, EV, FE)
 
-    rV = CPD9.Points(undef, 0,3)
+    rV = Lar.Points(undef, 0,3)
     rEV = SparseArrays.spzeros(Int8,0,0)
     rFE = SparseArrays.spzeros(Int8,0,0)
 
@@ -893,9 +893,9 @@ function space_arrangement(V::Points, EV::ChainOp, FE::ChainOp, multiproc::Bool=
 
 #       for sigma in 1:fs_num
 #           # print(sigma, "/", fs_num, "\r")
-#           nV, nEV, nFE = CPD9.Arrangement.frag_face(
+#           nV, nEV, nFE = Lar.Arrangement.frag_face(
 #           	V, EV, FE, sp_idx, sigma)
-#           a,b,c = CPD9.skel_merge(
+#           a,b,c = Lar.skel_merge(
 #           	rV, rEV, rFE, nV, nEV, nFE)
 #           rV=a; rEV=b; rFE=c
 #       end
@@ -918,18 +918,18 @@ function space_arrangement(V::Points, EV::ChainOp, FE::ChainOp, multiproc::Bool=
     end
 
 
-rV, rcopEV, rcopFE = CPD9.Arrangement.merge_vertices(rV, rEV, rFE)
-#V, EV, FV, FE  = CPD9.chaincongruence(Matrix(rV'), rEV::CPD9.ChainOp, rFE::CPD9.ChainOp; epsilon=0.0001)
+rV, rcopEV, rcopFE = Lar.Arrangement.merge_vertices(rV, rEV, rFE)
+#V, EV, FV, FE  = Lar.chaincongruence(Matrix(rV'), rEV::Lar.ChainOp, rFE::Lar.ChainOp; epsilon=0.0001)
 #VV = [[k] for k=1:size(V,2)]
-#GL.VIEW(push!(GL.numbering(.5)((V,CPD9.Cells[VV,EV,FV]), GL.COLORS[1], 0.5),GL.GLFrame2));
-#rV, rEV, rFE = CPD9.Points(V'), CPD9.lar2cop(EV), CPD9.lar2cop(FE)
+#GL.VIEW(push!(GL.numbering(.5)((V,Lar.Cells[VV,EV,FV]), GL.COLORS[1], 0.5),GL.GLFrame2));
+#rV, rEV, rFE = Lar.Points(V'), Lar.lar2cop(EV), Lar.lar2cop(FE)
 
 #function arrange3Dfaces(V, copEV, copFE)
-#EVs = CPD9.FV2EVs(copEV, copFE) # polygonal face fragments
+#EVs = Lar.FV2EVs(copEV, copFE) # polygonal face fragments
 #
-#triangulated_faces = CPD9.triangulate2D(V, [copEV, copFE])
-#FVs = convert(Array{CPD9.Cells}, triangulated_faces)
-#V = convert(CPD9.Points,V')
+#triangulated_faces = Lar.triangulate2D(V, [copEV, copFE])
+#FVs = convert(Array{Lar.Cells}, triangulated_faces)
+#V = convert(Lar.Points,V')
 #return V,FVs,EVs
 #end
 #V,FVs,EVs = arrange3Dfaces(rV, rEV, rFE);
@@ -945,13 +945,13 @@ end
 
 
 ###  2D triangulation
-Lar = CPD9
+Lar = LinearAlgebraicRepresentation
 """
-	obj2lar2D(path::AbstractString)::CPD9.LARmodel
+	obj2lar2D(path::AbstractString)::Lar.LARmodel
 
 Read a *triangulation* from file, given its `path`. Return a `LARmodel` object
 """
-function obj2lar2D(path::AbstractString)::CPD9.LARmodel
+function obj2lar2D(path::AbstractString)::Lar.LARmodel
     vs = Array{Float64, 2}(undef, 0, 3)
     edges = Array{Array{Int, 1}, 1}()
     faces = Array{Array{Int, 1}, 1}()
@@ -977,17 +977,17 @@ function obj2lar2D(path::AbstractString)::CPD9.LARmodel
 			end
 		end
 	end
-    return (vs, [edges,faces])::CPD9.LARmodel
+    return (vs, [edges,faces])::Lar.LARmodel
 end
 
 
 """
-	lar2obj2D(V::CPD9.Points,
-			cc::CPD9.ChainComplex)::String
+	lar2obj2D(V::Lar.Points,
+			cc::Lar.ChainComplex)::String
 
 Produce a *triangulation* from a `LARmodel`. Return a `String` object
 """
-function lar2obj2D(V::CPD9.Points, cc::CPD9.ChainComplex)::String
+function lar2obj2D(V::Lar.Points, cc::Lar.ChainComplex)::String
     @assert length(cc) == 2
     copEV, copFE = cc
     V = [V zeros(size(V, 1))]
@@ -1019,28 +1019,28 @@ end
 
 #TODO: finish by using a string as an IObuffer
 #"""
-#	lar2tria2lar(V::CPD9.Points, cc::CPD9.ChainComplex)::CPD9.LARmodel
+#	lar2tria2lar(V::Lar.Points, cc::Lar.ChainComplex)::Lar.LARmodel
 #
 #Return a triangulated `LARmodel` starting from a stadard LARmodel.
 #Useful for colour drawing a complex of non-convex cells.
 #
 #"""
-#function lar2tria2lar(V::CPD9.Points, cc::CPD9.ChainComplex)::CPD9.LARmodel
-#	obj = CPD9.lar2obj2D(V::CPD9.Points, cc::CPD9.ChainComplex)
-#	vs, (edges,faces) = CPD9.obj2lar2D(obj::AbstractString)::CPD9.LARmodel
-#	return (vs, [edges,faces])::CPD9.LARmodel
+#function lar2tria2lar(V::Lar.Points, cc::Lar.ChainComplex)::Lar.LARmodel
+#	obj = Lar.lar2obj2D(V::Lar.Points, cc::Lar.ChainComplex)
+#	vs, (edges,faces) = Lar.obj2lar2D(obj::AbstractString)::Lar.LARmodel
+#	return (vs, [edges,faces])::Lar.LARmodel
 #end
 
 
 
 
 """
-	triangulate2D(V::CPD9.Points,
-			cc::CPD9.ChainComplex)::Array{Any, 1}
+	triangulate2D(V::Lar.Points,
+			cc::Lar.ChainComplex)::Array{Any, 1}
 
 Compute a *CDT* for each face of a `ChainComplex`. Return an `Array` of triangles.
 """
-function triangulate2D(V::CPD9.Points, cc::CPD9.ChainComplex)::Array{Any, 1}
+function triangulate2D(V::Lar.Points, cc::Lar.ChainComplex)::Array{Any, 1}
     copEV, copFE = cc
     triangulated_faces = Array{Any, 1}(undef, copFE.m)
     if size(V,2)==2
@@ -1054,7 +1054,7 @@ function triangulate2D(V::CPD9.Points, cc::CPD9.ChainComplex)::Array{Any, 1}
         edge_num = length(edges_idxs)
         edges = Array{Int64,1}[] #zeros(Int64, edge_num, 2)
 
-		# fv = CPD9.buildFV(copEV, copFE[f, :])
+		# fv = Lar.buildFV(copEV, copFE[f, :])
 		fv = union(polygons[f]...)
         vs = V[fv, :]
 		edges = union(edgecycles[f]...)
@@ -1062,16 +1062,16 @@ function triangulate2D(V::CPD9.Points, cc::CPD9.ChainComplex)::Array{Any, 1}
 
 		# triangulated_faces[f] = Triangle.constrained_triangulation(
         # 	vs, fv, edges, fill(true, edge_num))
-		v = convert(CPD9.Points, vs'[1:2,:])
+		v = convert(Lar.Points, vs'[1:2,:])
 		vmap = Dict(zip(fv,1:length(fv))) # vertex map
 		mapv = Dict(zip(1:length(fv),fv)) # inverse vertex map
 		ev = [[vmap[e] for e in edges[k,:]] for k=1:size(edges,1)]
-		trias = CPD9.triangulate2d(v,ev)
+		trias = Lar.triangulate2d(v,ev)
 		triangulated_faces[f] = [[mapv[v] for v in tria] for tria in trias]
 
         tV = V[:, 1:2]
 
-        area = CPD9.face_area(tV, copEV, copFE[f, :])
+        area = Lar.face_area(tV, copEV, copFE[f, :])
         if area < 0
             for i in 1:length(triangulated_faces[f])
                 triangulated_faces[f][i] = triangulated_faces[f][i][end:-1:1]
@@ -1084,7 +1084,7 @@ end
 
 
 """
-	lar2cop(CV::CPD9.Cells)::CPD9.ChainOp
+	lar2cop(CV::Lar.Cells)::Lar.ChainOp
 
 Convert an array of array of integer indices to vertices into a sparse matrix.
 
@@ -1093,9 +1093,9 @@ Convert an array of array of integer indices to vertices into a sparse matrix.
 For a single 3D unit cube we get:
 
 ```
-julia> V,(VV,EV,FV,CV) = CPD9.cuboid([1,1,1],true);
+julia> V,(VV,EV,FV,CV) = Lar.cuboid([1,1,1],true);
 
-julia> Matrix(CPD9.lar2cop(EV))
+julia> Matrix(Lar.lar2cop(EV))
 12×8 Array{Int8,2}:
  1  1  0  0  0  0  0  0
  0  0  1  1  0  0  0  0
@@ -1110,7 +1110,7 @@ julia> Matrix(CPD9.lar2cop(EV))
  0  0  1  0  0  0  1  0
  0  0  0  1  0  0  0  1
 
-julia> Matrix(CPD9.lar2cop(FV))
+julia> Matrix(Lar.lar2cop(FV))
 6×8 Array{Int8,2}:
  1  1  1  1  0  0  0  0
  0  0  0  0  1  1  1  1
@@ -1119,12 +1119,12 @@ julia> Matrix(CPD9.lar2cop(FV))
  1  0  1  0  1  0  1  0
  0  1  0  1  0  1  0  1
 
-julia> Matrix(CPD9.lar2cop(CV))
+julia> Matrix(Lar.lar2cop(CV))
 1×8 Array{Int8,2}:
  1  1  1  1  1  1  1  1
 ```
 """
-function lar2cop(CV::CPD9.Cells)::CPD9.ChainOp
+function lar2cop(CV::Lar.Cells)::Lar.ChainOp
 	I = Int64[]; J = Int64[]; Value = Int8[];
 	for k=1:size(CV,1)
 		n = length(CV[k])
@@ -1137,7 +1137,7 @@ end
 
 
 """
-	cop2lar(cop::CPD9.ChainOp)::CPD9.Cells
+	cop2lar(cop::Lar.ChainOp)::Lar.Cells
 
 Convert a sparse array of type `ChainOp` into an array of array of type `Cells`.
 
@@ -1146,9 +1146,9 @@ Notice that `cop2lar` is the inverse function of `lar2cop`. their composition is
 # Example
 
 ```
-julia> V,(VV,EV,FV,CV) = CPD9.cuboid([1,1,1],true);
+julia> V,(VV,EV,FV,CV) = Lar.cuboid([1,1,1],true);
 
-julia> CPD9.cop2lar(CPD9.lar2cop(EV))
+julia> Lar.cop2lar(Lar.lar2cop(EV))
 12-element Array{Array{Int64,1},1}:
  [1, 2]
  [3, 4]
@@ -1157,7 +1157,7 @@ julia> CPD9.cop2lar(CPD9.lar2cop(EV))
  [3, 7]
  [4, 8]
 
-julia> CPD9.cop2lar(CPD9.lar2cop(FV))
+julia> Lar.cop2lar(Lar.lar2cop(FV))
 6-element Array{Array{Int64,1},1}:
  [1, 2, 3, 4]
  [5, 6, 7, 8]
@@ -1166,17 +1166,17 @@ julia> CPD9.cop2lar(CPD9.lar2cop(FV))
  [1, 3, 5, 7]
  [2, 4, 6, 8]
 
-julia> CPD9.cop2lar(CPD9.lar2cop(CV))
+julia> Lar.cop2lar(Lar.lar2cop(CV))
 1-element Array{Array{Int64,1},1}:
  [1, 2, 3, 4, 5, 6, 7, 8]
 ```
 """
-function cop2lar(cop::CPD9.ChainOp)::CPD9.Cells
+function cop2lar(cop::Lar.ChainOp)::Lar.Cells
 	[findnz(cop[k,:])[1] for k=1:size(cop,1)]
 end
 
 
-function FV2EVs(copEV::CPD9.ChainOp, copFE::CPD9.ChainOp)
+function FV2EVs(copEV::Lar.ChainOp, copFE::Lar.ChainOp)
 	EV = [findnz(copEV[k,:])[1] for k=1:size(copEV,1)]
 	FE = [findnz(copFE[k,:])[1] for k=1:size(copFE,1)]
 	EVs = [[EV[e] for e in fe] for fe in FE]
@@ -1195,14 +1195,14 @@ function randomcuboids(n,scale=1.0)
 	for k=1:n
 		corner = rand(Float64, 2)
 		sizes = rand(Float64, 2)
-		V,(_,EV,_) = CPD9.cuboid(corner,true,corner+sizes)
+		V,(_,EV,_) = Lar.cuboid(corner,true,corner+sizes)
 		center = (corner + corner+sizes)/2
 		angle = rand(Float64)*2*pi
-		obj = CPD9.Struct([ CPD9.t(center...), CPD9.r(angle),
-				CPD9.s(scale,scale), CPD9.t(-center...), (V,EV) ])
+		obj = Lar.Struct([ Lar.t(center...), Lar.r(angle),
+				Lar.s(scale,scale), Lar.t(-center...), (V,EV) ])
 		push!(assembly, obj)
 	end
-	CPD9.struct2lar(CPD9.Struct(assembly))
+	Lar.struct2lar(Lar.Struct(assembly))
 end
 
 function randomcubes(n,scale=1.0)
@@ -1210,27 +1210,27 @@ function randomcubes(n,scale=1.0)
 	for k=1:n
 		corner = rand(Float64, 3)
 		sizes = rand(Float64, 3)
-		V,(_,EV,FV,_) = CPD9.cuboid(corner,true,corner+sizes)
+		V,(_,EV,FV,_) = Lar.cuboid(corner,true,corner+sizes)
 		center = (corner + corner+sizes)/2
 		angle1 = rand(Float64)*2*pi
 		angle2 = rand(Float64)*2*pi
-		obj = CPD9.Struct([ CPD9.t(center...),
-				CPD9.r(0,angle2,0),CPD9.r(0,0,angle1),
-				CPD9.s(scale,scale,scale), CPD9.t(-center...), (V,EV,FV) ])
+		obj = Lar.Struct([ Lar.t(center...),
+				Lar.r(0,angle2,0),Lar.r(0,0,angle1),
+				Lar.s(scale,scale,scale), Lar.t(-center...), (V,EV,FV) ])
 		push!(assembly, obj)
 	end
-	CPD9.struct2lar(CPD9.Struct(assembly))
+	Lar.struct2lar(Lar.Struct(assembly))
 end
 
 
 
 """
-	compute_FV( copEV::CPD9.ChainOp, copFE::CPD9.ChainOp )::CPD9.Cells
+	compute_FV( copEV::Lar.ChainOp, copFE::Lar.ChainOp )::Lar.Cells
 
-Compute the `FV` array of type `CPD9.Cells` from two `CPD9.ChainOp`, via
+Compute the `FV` array of type `Lar.Cells` from two `Lar.ChainOp`, via
 sparse array product.  To be generalized to open 2-manifolds.
 """
-function compute_FV( copEV::CPD9.ChainOp, copFE::CPD9.ChainOp )
+function compute_FV( copEV::Lar.ChainOp, copFE::Lar.ChainOp )
 	# TODO: generalize for open 2-manifolds
 	kFV = (x->div(x,2)).(abs.(copFE) * abs.(copEV)) # works only for closed surfaces
 	FV = [SparseArrays.findnz(kFV[k,:])[1] for k=1:size(kFV,1)]
@@ -1305,8 +1305,8 @@ original and generated edges. `V` is given by column.
 #	innertriangles = Array{Int64,1}[]
 #	for (u,v,w) in trias
 #		point = (points[u,:]+points[v,:]+points[w,:])./3
-#		copEV = CPD9.lar2cop(EV)
-#		inner = CPD9.point_in_face(point, points::CPD9.Points, copEV::CPD9.ChainOp)
+#		copEV = Lar.lar2cop(EV)
+#		inner = Lar.point_in_face(point, points::Lar.Points, copEV::Lar.ChainOp)
 #		if inner
 #			push!(innertriangles,[u,v,w])
 #		end
@@ -1317,9 +1317,9 @@ original and generated edges. `V` is given by column.
 using Triangulate
 
 """
-    constrained_triangulation2D(V::CPD9.Points, EV::CPD9.Cells) -> CPD9.Cells
+    constrained_triangulation2D(V::Lar.Points, EV::Lar.Cells) -> Lar.Cells
 """
-function constrained_triangulation2D(V::CPD9.Points, EV::CPD9.Cells)
+function constrained_triangulation2D(V::Lar.Points, EV::Lar.Cells)
 	triin = Triangulate.TriangulateIO()
 	triin.pointlist = V
 	triin.segmentlist = hcat(EV...)
@@ -1330,23 +1330,23 @@ end
 
 
 """
- 	triangulate2d(V::CPD9.Points, EV::CPD9.Cells)
+ 	triangulate2d(V::Lar.Points, EV::Lar.Cells)
 
 """
-function triangulate2d(V::CPD9.Points, EV::CPD9.Cells)
+function triangulate2d(V::Lar.Points, EV::Lar.Cells)
    	 # data for Constrained Delaunay Triangulation (CDT)
    	 points = convert(Array{Float64,2}, V')
 	 # points_map = Array{Int64,1}(collect(1:1:size(points)[1]))
    	 # edges_list = convert(Array{Int64,2}, hcat(EV...)')
    	 # edge_boundary = [true for k=1:size(edges_list,1)] ## dead code !!
-	trias = constrained_triangulation2D(V::CPD9.Points, EV::CPD9.Cells)
+	trias = constrained_triangulation2D(V::Lar.Points, EV::Lar.Cells)
 
  	#Triangle.constrained_triangulation(points,points_map,edges_list)
 	innertriangles = Array{Int64,1}[]
 	for (u,v,w) in trias
 		point = (points[u,:]+points[v,:]+points[w,:])./3
-		copEV = CPD9.lar2cop(EV)
-		inner = CPD9.point_in_face(point, points::CPD9.Points, copEV::CPD9.ChainOp)
+		copEV = Lar.lar2cop(EV)
+		inner = Lar.point_in_face(point, points::Lar.Points, copEV::Lar.ChainOp)
 		if inner
 			push!(innertriangles,[u,v,w])
 		end

@@ -1,7 +1,7 @@
-
+Lar = LinearAlgebraicRepresentation
 
 """
-	simplex(n::Int, fullmodel=false::Bool)::Union{CPD9.CPD9a, CPD9.LARmodel}
+	simplex(n::Int, fullmodel=false::Bool)::Union{Lar.LAR, Lar.LARmodel}
 
 Return a `LAR` model of the *`n`-dimensional simplex* in *`n`-space*.
 
@@ -9,13 +9,13 @@ When `fullmodel==true` return a `LARmodel`, including the faces, from dimension 
 
 # Example
 ```
-using CPD9, Plasm, LinearAlgebra
-Lar = CPD9
+using LinearAlgebraicRepresentation, Plasm, LinearAlgebra
+Lar = LinearAlgebraicRepresentation
 
-model = CPD9.simplex(2)
-Plasm.view( CPD9.simplex(2) )
+model = Lar.simplex(2)
+Plasm.view( Lar.simplex(2) )
 
-V, cells = CPD9.simplex(3, true)
+V, cells = Lar.simplex(3, true)
 Plasm.view(Plasm.numbering(0.5)( (V,cells[1:end-1]) ))
 ```
 """
@@ -38,7 +38,7 @@ end
 
 
 """
-	extrudeSimplicial(model::CPD9a, pattern::Array)::CPD9
+	extrudeSimplicial(model::LAR, pattern::Array)::LAR
 
 Algorithm for multimensional extrusion of a simplicial complex.
 Can be applied to 0-, 1-, 2-, ... simplicial models, to get a 1-, 2-, 3-, .... model.
@@ -61,7 +61,7 @@ julia> W,FW = extrudeSimplicial(model, pattern);
 julia> Plasm.view(W,FW)
 ```
 """
-function extrudeSimplicial(model::CPD9.CPD9a, pattern)
+function extrudeSimplicial(model::Lar.LAR, pattern)
 	V = [model[1][:,k] for k=1:size(model[1],2)]
     FV = model[2]
     d, m = length(FV[1]), length(pattern)
@@ -85,7 +85,7 @@ function extrudeSimplicial(model::CPD9.CPD9a, pattern)
     outModel = outVertices, cellGroups
     hcat(outVertices...), cellGroups
 end
-function extrudeSimplicial(model::Union{Any,CPD9.Cells}, pattern)
+function extrudeSimplicial(model::Union{Any,Lar.Cells}, pattern)
 	V,FV = model
     d, m = length(FV[1]), length(pattern)
     coords = collect(cumsum(append!([0], abs.(pattern))))
@@ -112,7 +112,7 @@ end
 
 
 """
-	simplexGrid(shape::Array)::CPD9
+	simplexGrid(shape::Array)::LAR
 
 Generate a simplicial complex decomposition of a cubical grid of ``d``-cuboids, where ``d`` is the length of `shape` array. Vertices (0-cells) of the grid have `Int64` coordinates.
 
@@ -173,17 +173,17 @@ Compute the `(d-1)`-skeleton (unoriented set of `facets`) of a simplicial `d`-co
 
 # Example
 ```julia
-julia> V,FV = CPD9.simplexGrid([1,1]) # 2-dimensional complex
+julia> V,FV = Lar.simplexGrid([1,1]) # 2-dimensional complex
 # output
 ([0 1 0 1; 0 0 1 1], Array{Int64,1}[[1, 2, 3], [2, 3, 4]])
 
 julia> Plasm.view(V,FV)
 
-julia> W,CW = CPD9.extrudeSimplicial((V,FV), [1])
+julia> W,CW = Lar.extrudeSimplicial((V,FV), [1])
 ([0.0 1.0 … 0.0 1.0; 0.0 0.0 … 1.0 1.0; 0.0 0.0 … 1.0 1.0],
 Array{Int64,1}[[1,2,3,5],[2,3,5,6],[3,5,6,7],[2,3,4,6],[3,4,6,7],[4,6,7,8]])
 
-julia> FW = CPD9.simplexFacets(CW)
+julia> FW = Lar.simplexFacets(CW)
 18-element Array{Any,1}:
 [[1,3,5],[5,6,7],[3,5,7],[3,6,7],[4,6,7],[4,7,8],[4,6,8],
 [6,7,8],[3,5,6],[2,3,5],[2,3,4],[3,4,7],[1,2,3],[2,4,6],[2,5,6],
@@ -195,9 +195,9 @@ julia> Plasm.view(W,FW)
 # Example
 
 ```julia
-julia> V,(VV,EV,FV,CV) = CPD9.cuboidGrid([3,3,3],true)
+julia> V,(VV,EV,FV,CV) = Lar.cuboidGrid([3,3,3],true)
 
-julia> TV = CPD9.simplexFacets(CV)
+julia> TV = Lar.simplexFacets(CV)
 
 julia> Plasm.view(V,TV)
 
@@ -221,7 +221,7 @@ CV = simplexGrid([1,1,1])
 """
 	quads2triangles(quads::Cells)::Cells
 
-Convert an array of *quads* with type `::CPD9.Cells` into an array of *triangles*
+Convert an array of *quads* with type `::Lar.Cells` into an array of *triangles*
 with the same type.
 
 # Examples
@@ -230,20 +230,20 @@ The transformation from quads to triangles works for any 2-complex, embedded in 
 
 ## 2D example
 ```
-V,FV = CPD9.cuboidGrid([4,5])
-triangles = CPD9.quads2triangles(FV::CPD9.Cells)::CPD9.Cells
+V,FV = Lar.cuboidGrid([4,5])
+triangles = Lar.quads2triangles(FV::Lar.Cells)::Lar.Cells
 using Plasm
 Plasm.view((V,[triangles]))
 ```
 ## 3D example
 ```
-V,(VV,EV,FV,CV) = CPD9.cuboidGrid([4,5,3],true)
-triangles = CPD9.quads2triangles(FV::CPD9.Cells)::CPD9.Cells
+V,(VV,EV,FV,CV) = Lar.cuboidGrid([4,5,3],true)
+triangles = Lar.quads2triangles(FV::Lar.Cells)::Lar.Cells
 using Plasm
 Plasm.view((V,[triangles]))
 ```
 """
-function quads2triangles(quads::CPD9.Cells)::CPD9.Cells
+function quads2triangles(quads::Lar.Cells)::Lar.Cells
 	pairs = [[ Int[v1,v2,v3], Int[v3,v2,v4]] for (v1,v2,v3,v4) in quads ]
 	return cat(pairs)
 end
@@ -255,8 +255,8 @@ function sparsetranspose(S::SparseMatrixCSC{Int8,Int64})::SparseMatrixCSC{Int8,I
 end
 
 function simplexBoundary_3(CV,FV)
-	K_2 = CPD9.characteristicMatrix(FV)
-	K_3 = CPD9.characteristicMatrix(CV)
+	K_2 = Lar.characteristicMatrix(FV)
+	K_3 = Lar.characteristicMatrix(CV)
 
 	FC = K_2 * sparsetranspose(K_3)
 

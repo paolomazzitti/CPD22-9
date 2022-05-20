@@ -1,4 +1,4 @@
-Lar = CPD9
+Lar = LinearAlgebraicRepresentation
 
 """
 	frag_face_channel(in_chan, out_chan, V, EV, FE, sp_idx)
@@ -32,20 +32,20 @@ function frag_face(V, EV, FE, sp_idx, sigma)
     sigmavs = (abs.(FE[sigma:sigma,:]) * abs.(EV))[1,:].nzind
     sV = V[sigmavs, :]
     sEV = EV[FE[sigma, :].nzind, sigmavs]
-    M = CPD9.Arrangement.submanifold_mapping(sV)
+    M = Lar.Arrangement.submanifold_mapping(sV)
     tV = ([V ones(vs_num)]*M)[:, 1:3]  # folle convertire *tutti* i vertici
     sV = tV[sigmavs, :]
     # sigma face intersection with faces in sp_idx[sigma]
     for i in sp_idx[sigma]
-        tmpV, tmpEV = CPD9.Arrangement.face_int(tV, EV, FE[i, :])
+        tmpV, tmpEV = Lar.Arrangement.face_int(tV, EV, FE[i, :])
 		sV, sEV
-        sV, sEV = CPD9.skel_merge(sV, sEV, tmpV, tmpEV)
+        sV, sEV = Lar.skel_merge(sV, sEV, tmpV, tmpEV)
     end
 
     # computation of 2D arrangement of sigma face
     sV = sV[:, 1:2]
     nV, nEV, nFE = planar_arrangement(sV, sEV, sparsevec(ones(Int8, length(sigmavs))))
-    if nV === nothing ## not possible !! ... (each original face maps to its decomposition)
+    if nV == nothing ## not possible !! ... (each original face maps to its decomposition)
         return [], spzeros(Int8, 0,0), spzeros(Int8, 0,0)
     end
     nvsize = size(nV, 1)
@@ -54,21 +54,21 @@ function frag_face(V, EV, FE, sp_idx, sigma)
     return nV, nEV, nFE
 end
 
-function merge_vertices(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp, err=1e-4)
+function merge_vertices(V::Lar.Points, EV::Lar.ChainOp, FE::Lar.ChainOp, err=1e-4)
    vertsnum = size(V, 1)
    edgenum = size(EV, 1)
    facenum = size(FE, 1)
    newverts = zeros(Int, vertsnum)
    # KDTree constructor needs an explicit array of Float64
    V = Array{Float64,2}(V)
-   W = convert(CPD9.Points, LinearAlgebra.transpose(V))
+   W = convert(Lar.Points, LinearAlgebra.transpose(V))
    kdtree = KDTree(W)
 # remove vertices congruent to a single representative
    todelete = []
    i = 1
    for vi in 1:vertsnum
        if !(vi in todelete)
-           nearvs = CPD9.inrange(kdtree, V[vi, :], err)
+           nearvs = Lar.inrange(kdtree, V[vi, :], err)
            newverts[nearvs] .= i
            nearvs = setdiff(nearvs, vi)
            todelete = union(todelete, nearvs)
@@ -138,26 +138,26 @@ function merge_vertices(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp, err=
        end
    end
 
-   return CPD9.Points(nV), nEV, nFE
+   return Lar.Points(nV), nEV, nFE
 end
 
-#function merge_vertices(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp, err=1e-4)
+#function merge_vertices(V::Lar.Points, EV::Lar.ChainOp, FE::Lar.ChainOp, err=1e-4)
 #println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 #println("\n\nHERE TO Make LOCAL CONGRUENCE\n\n")
 #println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-#   return CPD9.Points(nV), nEV, nFE
+#   return Lar.Points(nV), nEV, nFE
 #end
 
 
 function spatial_arrangement_1(
-		V::CPD9.Points,
-		copEV::CPD9.ChainOp,
-		copFE::CPD9.ChainOp, multiproc::Bool=false)
+		V::Lar.Points,
+		copEV::Lar.ChainOp,
+		copFE::Lar.ChainOp, multiproc::Bool=false)
 
 	# spaceindex computation
-	FV = CPD9.compute_FV( copEV, copFE )
-	model = (convert(CPD9.Points,V'), FV)
-	sp_idx = CPD9.spaceindex(model) # OK!!  tested symmetry of computed relation
+	FV = Lar.compute_FV( copEV, copFE )
+	model = (convert(Lar.Points,V'), FV)
+	sp_idx = Lar.spaceindex(model) # OK!!  tested symmetry of computed relation
 
 	# initializations
 	fs_num = size(copFE, 1)
@@ -182,13 +182,13 @@ function spatial_arrangement_1(
                 frag_face_channel, p, in_chan, out_chan, V, EV, FE, sp_idx)
         end
         for sigma in 1:fs_num
-            rV, rEV, rFE = CPD9.skel_merge(rV, rEV, rFE, take!(out_chan)...)
+            rV, rEV, rFE = Lar.skel_merge(rV, rEV, rFE, take!(out_chan)...)
         end
     else
 	# sequential (iterative) processing of face fragmentation
         for sigma in 1:fs_num
             println("\n",sigma, "/", fs_num)
-            nV, nEV, nFE = CPD9.Arrangement.frag_face(V, copEV, copFE, sp_idx, sigma)
+            nV, nEV, nFE = Lar.Arrangement.frag_face(V, copEV, copFE, sp_idx, sigma)
 # 			v = size(nV,1); e = nEV.m; f = nFE.m
 # @show v-e+f
 # 			if v-e+f > 1
@@ -198,9 +198,9 @@ function spatial_arrangement_1(
 # @show SparseArrays.nzind(nEV)
 # @show SparseArrays.nzind(nFE)
 # 			end
-			#nV, nEV, nFE = CPD9.fragface(V, copEV, copFE, sp_idx, sigma)
-			nV = convert(CPD9.Points, nV)
-            a,b,c = CPD9.skel_merge( rV,rEV,rFE,  nV,nEV,nFE )
+			#nV, nEV, nFE = Lar.fragface(V, copEV, copFE, sp_idx, sigma)
+			nV = convert(Lar.Points, nV)
+            a,b,c = Lar.skel_merge( rV,rEV,rFE,  nV,nEV,nFE )
             rV=a;  rEV=b;  rFE=c
         end
     end
@@ -217,16 +217,16 @@ The return walue has `g` less rows than the input `nFE`.
 """
 function removeinnerloops(g, nFE)
 	# optimized solution (to check): remove the last `g` rows
-	FE = CPD9.cop2lar(nFE)
-	nFE = CPD9.lar2cop(FE[1:end-g])
+	FE = Lar.cop2lar(nFE)
+	nFE = Lar.lar2cop(FE[1:end-g])
 end
 
 function spatial_arrangement_2(
-		rV::CPD9.Points,
-		rcopEV::CPD9.ChainOp,
-		rcopFE::CPD9.ChainOp, multiproc::Bool=false)
+		rV::Lar.Points,
+		rcopEV::Lar.ChainOp,
+		rcopFE::Lar.ChainOp, multiproc::Bool=false)
 
-	rcopCF = CPD9.build_copFC(rV, rcopEV, rcopFE)  ######
+	rcopCF = Lar.build_copFC(rV, rcopEV, rcopFE)  ######
 	#rcopCF = minimal_3cycles(rV, rcopEV, rcopFE)
     return rV, rcopEV, rcopFE, rcopCF
 end
@@ -247,17 +247,17 @@ The function returns the full arranged complex as a list of vertices V and a cha
 - `multiproc::Bool`: Runs the computation in parallel mode. Defaults to `false`.
 """
 function spatial_arrangement(
-		V::CPD9.Points, # by rows
-		copEV::CPD9.ChainOp,
-		copFE::CPD9.ChainOp, multiproc::Bool=false)
+		V::Lar.Points, # by rows
+		copEV::Lar.ChainOp,
+		copFE::Lar.ChainOp, multiproc::Bool=false)
 
 	# face subdivision
-	rV, rcopEV, rcopFE = CPD9.Arrangement.spatial_arrangement_1( V,copEV,copFE,multiproc )
+	rV, rcopEV, rcopFE = Lar.Arrangement.spatial_arrangement_1( V,copEV,copFE,multiproc )
 
-	bicon_comps = CPD9.Arrangement.biconnected_components(rcopEV)
-	#W,bicon_comps = CPD9.biconnectedComponent((W,EV))
+	bicon_comps = Lar.Arrangement.biconnected_components(rcopEV)
+	#W,bicon_comps = Lar.biconnectedComponent((W,EV))
 	#@error "comps# = $(length(bicon_comps))"
 	# 3-complex and containment graph
 
-	rV, rEV, rFE, rCF = CPD9.Arrangement.spatial_arrangement_2(rV, rcopEV, rcopFE)
+	rV, rEV, rFE, rCF = Lar.Arrangement.spatial_arrangement_2(rV, rcopEV, rcopFE)
 end

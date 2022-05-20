@@ -1,5 +1,5 @@
 using LinearAlgebra
-Lar = CPD9
+Lar = LinearAlgebraicRepresentation
 
 function submanifold_mapping(vs)
     u1 = vs[2,:] - vs[1,:]
@@ -12,7 +12,7 @@ function submanifold_mapping(vs)
     return T*M
 end
 
-function spatial_index(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
+function spatial_index(V::Lar.Points, EV::Lar.ChainOp, FE::Lar.ChainOp)
     d = 3
     faces_num = size(FE, 1)
     IntervalsType = IntervalValue{Float64, Int64}
@@ -21,7 +21,7 @@ function spatial_index(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
     for fi in 1:faces_num
         vidxs = (abs.(FE[fi:fi,:])*abs.(EV))[1,:].nzind
         intervals = map((l,u)->IntervalsType(l,u,fi),
-        	CPD9.bbox(V[vidxs, :])...)
+        	Lar.bbox(V[vidxs, :])...)
         boxes1D = vcat(boxes1D, intervals)
     end
     trees = mapslices(IntervalTree{Float64, IntervalsType}, sort(boxes1D; dims=1), dims=1)
@@ -44,9 +44,9 @@ function spatial_index(V::CPD9.Points, EV::CPD9.ChainOp, FE::CPD9.ChainOp)
     mapping
 end
 
-function face_int(V::CPD9.Points, EV::CPD9.ChainOp, face::CPD9.Cell)
-    vs = CPD9.buildFV(EV, face)
-    retV = CPD9.Points(undef, 0, 3)
+function face_int(V::Lar.Points, EV::Lar.ChainOp, face::Lar.Cell)
+    vs = Lar.buildFV(EV, face)
+    retV = Lar.Points(undef, 0, 3)
 
     visited_verts = []
     for i in 1:length(vs)
@@ -64,7 +64,7 @@ function face_int(V::CPD9.Points, EV::CPD9.ChainOp, face::CPD9.Cell)
                 p = o + alpha*d
 
                 if -err < alpha < err || 1-err < alpha < 1+err
-                    if !(CPD9.vin(p, visited_verts))
+                    if !(Lar.vin(p, visited_verts))
                         push!(visited_verts, p)
                         retV = [retV; reshape(p, 1, 3)]
                     end
@@ -81,7 +81,7 @@ function face_int(V::CPD9.Points, EV::CPD9.ChainOp, face::CPD9.Cell)
 
     if vnum == 1
         vnum = 0
-        retV = CPD9.Points(undef, 0, 3)
+        retV = Lar.Points(undef, 0, 3)
     end
     enum = (÷)(vnum, 2)
     retEV = spzeros(Int8, enum, vnum)
