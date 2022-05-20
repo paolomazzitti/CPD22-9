@@ -369,6 +369,8 @@ function bool3d(assembly)
     for (j, point) in enumerate(innerpoints)
         faces[j] = spaceindex(point)((V, FV))
     end
+    
+    main(Vector{Any}(undef, 2))
 
     @threads for (k, point) in collect(enumerate(innerpoints))
         cells = containmenttest(point, faces[k])
