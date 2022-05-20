@@ -1,7 +1,7 @@
 name = "CPD9"
 uuid = "2427b60a-9e4e-466a-a846-bad9a11f737b"
 authors = ["Paolo Mazzitti <pao.mazzitti@stud.uniroma3.it>"]
-version = "0.1.0"
+version = "0.1.2"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
