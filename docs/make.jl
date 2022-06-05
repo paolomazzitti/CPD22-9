@@ -8,5 +8,5 @@ makedocs(sitename="LARGenerators.jl",
     modules=[LARgenerators]
 )
 deploydocs(
-    repo="github.com:paolomazzitti/CPD22-9.git",
+    repo="github.com/paolomazzitti/CPD22-9.git",
 )
