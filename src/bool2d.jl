@@ -88,7 +88,7 @@ end
 
 """
 	testinternalpoint2d(V::CPD9.Points, EV::CPD9.Cells, FV::CPD9.Cells)
-
+    ciao
 """
 function testinternalpoint2d(listOfModels)
     function testinternalpoint0(testpoint)
@@ -108,7 +108,11 @@ function testinternalpoint2d(listOfModels)
     end
     return testinternalpoint0
 end
+"""
+    bool2d(assembly)
+    some docstring
 
+"""
 function bool2d(assembly)
 
     main(Vector{Any}(undef, 2))
@@ -123,7 +127,7 @@ function bool2d(assembly)
 
     containmenttest = testinternalpoint2d(listOfModels)
 
-    for (k, point) in enumerate(innerpoints)
+    @threads for (k, point) in collect(enumerate(innerpoints))
         cells = containmenttest(point)
         for l in cells
             if l != 0
