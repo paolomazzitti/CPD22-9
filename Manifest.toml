@@ -182,6 +182,12 @@ git-tree-sha1 = "f7809f532671564e48cd81627ddcfb1ba670f87d"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 version = "0.27.19"
 
+[[deps.DocumenterMarkdown]]
+deps = ["Documenter"]
+git-tree-sha1 = "9af057a98652336e30586d8092fac06f8b28ecdc"
+uuid = "997ab1e6-3595-5248-9280-8efb232c3433"
+version = "0.2.2"
+
 [[deps.DocumenterTools]]
 deps = ["AbstractTrees", "Base64", "DocStringExtensions", "Documenter", "FileWatching", "Gumbo", "LibGit2", "OpenSSH_jll", "Sass"]
 git-tree-sha1 = "b7973759b8428ff689b58ef11a1f6942a08a47f3"
@@ -845,7 +851,7 @@ git-tree-sha1 = "3fd059fa91edfeededc198d371030597835476b9"
 repo-rev = "master"
 repo-url = "https://github.com/cvdlab/ViewerGL.jl.git"
 uuid = "32496ab8-9004-11e9-0205-c9e71bda7ab0"
-
+version = "0.1.0"
 
 [[deps.Wayland_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]
