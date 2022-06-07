@@ -15,6 +15,6 @@ Lo studio e lo sviluppo del codice sono condotti con l’ausilio di alcuni strum
 ## Obiettivi
 
 Sono stati individuati alcuni punti su cui ci si è soffermati al fine di migliorare, ove possibile, il progetto:
-- **Ottimizzazione delle prestazioni** tramite tecniche di parallelizzazione, di calcolo distribuito e altre migliorie con riferimento al libro Julia High- Performance;
+- **Ottimizzazione delle prestazioni** tramite tecniche di parallelizzazione, di calcolo distribuito e altre migliorie con riferimento al libro *Julia High-Performance*;
 - Scrittura di una **documentazione** chiara ed esaustiva per migliorare la leggibilità e la comprensibilità delle funzioni principali individuate utilizzando le docstrings del linguaggio Julia;
 - Creazione di file di **test** al fine di verificare l’integrità e la corretta interoperabilità del codice con le altri parti di cui il progetto è composto.
