@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.3"
+julia_version = "1.7.2"
 manifest_format = "2.0"
 
 [[deps.ANSIColoredPrinters]]
@@ -195,7 +195,7 @@ uuid = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 version = "0.1.14"
 
 [[deps.Downloads]]
-deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
+deps = ["ArgTools", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[deps.EllipsisNotation]]
@@ -849,7 +849,7 @@ version = "1.3.0"
 deps = ["DataStructures", "GLFW", "LinearAlgebra", "LinearAlgebraicRepresentation", "ModernGL", "Pkg", "QHull", "SparseArrays", "StaticArrays"]
 git-tree-sha1 = "3fd059fa91edfeededc198d371030597835476b9"
 repo-rev = "master"
-repo-url = "https://github.com/cvdlab/ViewerGL.jl.git"
+repo-url = "https://github.com/cvdlab/ViewerGL.jl"
 uuid = "32496ab8-9004-11e9-0205-c9e71bda7ab0"
 version = "0.1.0"
 

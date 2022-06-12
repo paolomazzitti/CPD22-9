@@ -8,9 +8,15 @@ n, m, p = 1, 1, 1
 V, (VV, EV, FV, CV) = Lar.cuboidGrid([n, m, p], true)
 cube = V, FV, EV
 
-assembly = Lar.Struct([
+#= assembly = Lar.Struct([
     Lar.Struct([Lar.t(rand(-0.4:0.1:0.4), rand(-0.4:0.1:0.4), rand(-0.4:0.1:0.4)), Lar.r(rand(-0.5:0.1:0.5), 0, 0), cube]) for _ in 1:T
+]) =#
+
+assembly = Lar.Struct([ cube,
+    Lar.t(.3,.4,.25), Lar.r(pi/5,0,0), Lar.r(0,0,pi/12), cube,
+    Lar.t(-.2,.4,-.2), Lar.r(0,pi/5,0), Lar.r(0,pi/12,0), cube
 ])
+
 
 V, FV = Lar.struct2lar(assembly)
 
@@ -21,7 +27,7 @@ for k = 1:length(FV)
 end
 GL.VIEW(meshes);
 
-W, (copEV, copFE, copCF), boolmatrix = LARgenerators.bool3d(assembly)
+W, copEV, copFE, copCF, boolmatrix = LARgenerators.bool3d(assembly)
 Matrix(boolmatrix)
 
 A = boolmatrix[:, 2]

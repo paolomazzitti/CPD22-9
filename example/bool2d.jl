@@ -2,13 +2,15 @@ using SparseArrays, LARgenerators, Base.Threads, SparseArrays,IntervalTrees, Lin
 import ViewerGL as GL
 import LinearAlgebraicRepresentation as Lar
 
-T = 10
-
 V, (VV, EV, FV) = Lar.cuboidGrid([1, 1], true)
 square = V, EV
 
 assembly = Lar.Struct([
-    Lar.Struct([Lar.t(rand(0:0.1:0.5), rand(0:0.1:0.5)), Lar.r(rand(0:0.1:0.5)), square]) for i in 1:T
+    Lar.Struct([Lar.t(0,0), Lar.r(0), square])
+    Lar.Struct([Lar.t(0,0.1), Lar.r(0.1), square])
+    Lar.Struct([Lar.t(0,0.2), Lar.r(0.2), square])
+    Lar.Struct([Lar.t(0,0.3), Lar.r(0.3), square])
+    Lar.Struct([Lar.t(0,0.4), Lar.r(0.4), square])
 ])
 
 V, EV = Lar.struct2lar(assembly)
@@ -19,10 +21,12 @@ W, copEV, copFE, boolmatrix = LARgenerators.bool2d(assembly)
 A = boolmatrix[:, 1]
 B = boolmatrix[:, 2]
 C = boolmatrix[:, 3]
+D = boolmatrix[:, 4]
+E = boolmatrix[:, 5]
 
-AorB = A .| B .| C
-AandB = A .& B .& C
-AxorB = A .⊻ B .⊻ C
+AorB = A .| B .| C .| D .| E
+AandB = A .& B .& C .& D .& E
+AxorB = A .⊻ B .⊻ C .⊻ D .⊻ E
 
 union = Matrix(copFE)' * Int.(AorB)
 intersection = Matrix(copFE)' * Int.(AandB)

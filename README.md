@@ -1,4 +1,4 @@
-# Informazioni generali
+# LAR Generators 
 
 Progetto **LAR Generators** per il corso di **Calcolo Parallelo e Distribuito** svolto da:
 
@@ -8,19 +8,10 @@ Progetto **LAR Generators** per il corso di **Calcolo Parallelo e Distribuito** 
 | Matteo Colonnello|527289|mat.colonnello@stud.uniroma3.it|[https://github.com/MatteoColonnello](https://github.com/MatteoColonnello)|
 | Martina Falanga|522705|mar.falanga@stud.uniroma3.it|[https://github.com/MartinaFalanga](https://github.com/MartinaFalanga) |
 
-Link al repository GitHub: [https://github.com/paolomazzitti/CPD22-9](https://github.com/paolomazzitti/CPD22-9)
+
+> **Note**
+> Le foto dei componenti del gruppo sono disponibili nei profili personali Github
 
 Link ai notebook:
   - `bool2d`: [https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool2d.ipynb](https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool2d.ipynb)
   - `bool3d`: [https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool3d.ipynb](https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool3d.ipynb)
-
-!!! note "Immagini profilo"
-    Le foto dei componenti del gruppo sono disponibili nei profili personali Github
-
-# Indice
-
-```@contents
-Pages = ["intro.md", "grafo.md","sviluppo.md","analisi.md"]
-Depth = 3
-```
-
