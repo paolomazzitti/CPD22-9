@@ -1,3 +1,6 @@
+import Pkg
+Pkg.add("Documenter")
+
 using Documenter, LARgenerators, DocumenterMarkdown
 using DocumenterTools: Themes
 
