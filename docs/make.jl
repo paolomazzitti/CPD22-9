@@ -16,6 +16,7 @@ makedocs(
             "Documentazione (3D)" => "docs3d.md"
         ],
         "Analisi delle prestazioni" => "analisi.md",
+        "Conclusione" => "conclusione.md"
     ],
     modules=[LARgenerators]
 )

@@ -60,7 +60,6 @@ Temporary Items
 ### macOS Patch ###
 # iCloud generated files
 *.icloud
-*.DS_Store
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json

@@ -20,9 +20,15 @@ Sono state parallelizzate funzioni, quali:
 - `getInternalPoint()` di `bool3d`;
 - `chainBasis2Solids()` di `bool3d`;
 
-E’ stata realizzata inoltre una versione specifica della funzione `pointInPolygonClassification()` che serve ad identificare se dati dei punti, questi siano interni o esterni ad un poligono.
+E’ stata realizzata inoltre una versione specifica della funzione `pointInPolygonClassification()` che serve ad identificare se dati dei punti, questi siano interni o esterni ad un poligono. Dalla scelta dei punti nelle funzioni `settestpoints()` e `settestpoints2d()`, si è riusciti a semplificare la quantità di casistiche *if-else* da un numero di 15 ad un numero di 4 in una prima iterazione e poi da 4 a 2 in una seconda iterazione. Si è osservato, infatti, che i codici di spigolo ( `c_edge` ) effettivamente determinanti nell'algoritmo sono esclusivamente 3 e 15.
 
-Dalla scelta dei punti nelle funzioni `settestpoints()` e `settestpoints2d()`, si è riusciti a semplificare la quantità di casistiche *if-else* da un numero di 15 ad un numero di 4 in una prima iterazione e poi da 4 a 2 in una seconda iterazione. Si è osservato, infatti, che i codici di spigolo ( `c_edge` ) effettivamente determinanti nell'algoritmo sono esclusivamente 3 e 15.
+## Sviluppo file di test
 
-## Test
+Durante la fase di sviluppo, sono stati implementati anche dei file di test per verificare che le modifiche apportate al codice non abbiano alterato il funzionamento del progetto. A tal riguardo, si distinguono due tipologie di test: una relativa all'integrità dei tipi (utilizzando la macro `@inferred`) e una alla correttezza dei valori restituiti dalle principali funzioni.
 
+```jldoctest
+julia> using Pkg
+julia> Pkg.test()
+```
+
+Link ai test: [https://github.com/paolomazzitti/CPD22-9/tree/studio-definitivo/test](https://github.com/paolomazzitti/CPD22-9/tree/studio-definitivo/test)
