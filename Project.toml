@@ -1,0 +1,24 @@
+name = "LARgenerators"
+uuid = "ab42a739-175e-4c18-a375-99a41f8945eb"
+authors = ["Paolo Mazzitti <pao.mazzitti@stud.uniroma3.it>"]
+version = "1.0.0"
+
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+DocumenterMarkdown = "997ab1e6-3595-5248-9280-8efb232c3433"
+DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+IntervalTrees = "524e6230-43b7-53ae-be76-1e9e4d08d11b"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+LinearAlgebraicRepresentation = "95167b0c-186a-594b-a231-52369c6de044"
+NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+ProfileView = "c46f51b8-102a-5cf2-8d2c-8597cb0e0da7"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Triangulate = "f7e6ffb2-c36d-4f8f-a77e-16e897189344"
+ViewerGL = "32496ab8-9004-11e9-0205-c9e71bda7ab0"
+
+[compat]
+Documenter = "0.26"
