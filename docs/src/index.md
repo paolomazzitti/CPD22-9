@@ -20,7 +20,7 @@ Link ai notebook:
 # Indice
 
 ```@contents
-Pages = ["intro.md", "grafo.md","sviluppo.md","analisi.md","conclusioni.md"]
+Pages = ["intro.md", "grafo.md","sviluppo.md","analisi.md","esempiobool2d.md","esempiobool3d.md","conclusioni.md"]
 Depth = 3
 ```
 

@@ -15,3 +15,12 @@ Progetto **LAR Generators** per il corso di **Calcolo Parallelo e Distribuito** 
 Link ai notebook:
   - `bool2d`: [https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool2d.ipynb](https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool2d.ipynb)
   - `bool3d`: [https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool3d.ipynb](https://github.com/paolomazzitti/CPD22-9/blob/studio-definitivo/bool3d.ipynb)
+
+## Packages
+
+```julia
+(LARgenerators) pkg> add "https://github.com/cvdlab/ViewerGL.jl"
+(LARgenerators) pkg> add LinearAlgebraicRepresentation
+(LARgenerators) pkg> add IntervalTrees
+(LARgenerators) pkg> add SparseArrays
+```

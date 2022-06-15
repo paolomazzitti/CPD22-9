@@ -276,7 +276,7 @@ function getinternalpoint(V, FV, Fs, copEV, copFE, z, ptest1, ptest2)
             push!(z[threadid()], (face, ret1))
         end
     end
-
+    println(length(z[threadid()]))
     k1 = 0
     for (face, point3d) in z[threadid()]
         vs, edges, point2d = planemap(V, copEV, copFE, face)(point3d)

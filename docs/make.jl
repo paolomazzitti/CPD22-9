@@ -16,6 +16,10 @@ makedocs(
             "Documentazione (3D)" => "docs3d.md"
         ],
         "Analisi delle prestazioni" => "analisi.md",
+        "Esempi e risultati" => [
+            "Esempio con immagini (2D)" => "esempiobool2d.md",
+            "Esempio con immagini (3D)" => "esempiobool3d.md"
+        ],
         "Conclusione" => "conclusione.md"
     ],
     modules=[LARgenerators]
