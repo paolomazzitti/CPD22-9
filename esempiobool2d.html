@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Esempio con immagini (2D) · LARGenerators.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="index.html"><img src="assets/logo.png" alt="LARGenerators.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">LARGenerators.jl</span></div><form class="docs-search" action="search.html"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="index.html">Informazioni generali</a></li><li><a class="tocitem" href="intro.html">Introduzione</a></li><li><a class="tocitem" href="grafo.html">Grafo delle dipendenze</a></li><li><a class="tocitem" href="sviluppo.html">Sviluppo</a></li><li><span class="tocitem">Documentazione</span><ul><li><a class="tocitem" href="docs2d.html">Documentazione (2D)</a></li><li><a class="tocitem" href="docs3d.html">Documentazione (3D)</a></li></ul></li><li><a class="tocitem" href="analisi.html">Analisi delle prestazioni</a></li><li><span class="tocitem">Esempi e risultati</span><ul><li class="is-active"><a class="tocitem" href="esempiobool2d.html">Esempio con immagini (2D)</a><ul class="internal"><li><a class="tocitem" href="#Esempio-bool2d"><span>Esempio <code>bool2d</code></span></a></li><li><a class="tocitem" href="#Immagini-bool2d"><span>Immagini <code>bool2d</code></span></a></li></ul></li><li><a class="tocitem" href="esempiobool3d.html">Esempio con immagini (3D)</a></li></ul></li><li><a class="tocitem" href="conclusione.html">Conclusione</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Esempi e risultati</a></li><li class="is-active"><a href="esempiobool2d.html">Esempio con immagini (2D)</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="esempiobool2d.html">Esempio con immagini (2D)</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/paolomazzitti/CPD22-9/blob/master/docs/src/esempiobool2d.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h2 id="Esempio-bool2d"><a class="docs-heading-anchor" href="#Esempio-bool2d">Esempio <code>bool2d</code></a><a id="Esempio-bool2d-1"></a><a class="docs-heading-anchor-permalink" href="#Esempio-bool2d" title="Permalink"></a></h2><pre><code class="language-julia">using ViewerGL, SparseArrays, BenchmarkTools
+import LinearAlgebraicRepresentation as Lar
+GL = ViewerGL
+
+V, (VV, EV, FV) = Lar.cuboidGrid([1, 1], true)
+square = V, EV
+
+assembly = Lar.Struct([
+    Lar.Struct([Lar.t(0,0), Lar.r(0), square])
+    Lar.Struct([Lar.t(0,0.1), Lar.r(0.1), square])
+    Lar.Struct([Lar.t(0,0.2), Lar.r(0.2), square])
+    Lar.Struct([Lar.t(0,0.3), Lar.r(0.3), square])
+    Lar.Struct([Lar.t(0,0.4), Lar.r(0.4), square])
+])
+
+V, EV = Lar.struct2lar(assembly)
+GL.VIEW([GL.GLGrid(V, EV, GL.COLORS[1], 1), GL.GLFrame2]);
+
+W, copEV, copFE, boolmatrix = bool2d(assembly)
+
+A = boolmatrix[:, 1]
+B = boolmatrix[:, 2]
+C = boolmatrix[:, 3]
+D = boolmatrix[:, 4]
+E = boolmatrix[:, 5]
+
+AorB = A .| B .| C .| D .| E
+AandB = A .&amp; B .&amp; C .&amp; D .&amp; E
+AxorB = A .⊻ B .⊻ C .⊻ D .⊻ E
+
+union = Matrix(copFE)&#39; * Int.(AorB)
+intersection = Matrix(copFE)&#39; * Int.(AandB)
+xor = Matrix(copFE)&#39; * AxorB
+
+V = convert(Lar.Points,W&#39;)
+EV = Lar.cop2lar(copEV)
+EVor = [ev for (k,ev) in enumerate(EV) if abs(union[k])==1 ]
+EVand = [ev for (k,ev) in enumerate(EV) if abs(intersection[k])==1 ]
+EVxor = [ev for (k,ev) in enumerate(EV) if abs(xor[k])==1 ]
+
+GL.VIEW([ GL.GLGrid(V,EVor, GL.COLORS[1],1), GL.GLFrame2 ]);
+GL.VIEW([ GL.GLGrid(V,EVand, GL.COLORS[1],1), GL.GLFrame2 ]);
+GL.VIEW([ GL.GLGrid(V,EVxor, GL.COLORS[1],1), GL.GLFrame2 ]);
+
+model = (V,[VV, EVor])
+GL.VIEW( GL.numbering(.5)( model,GL.COLORS[1],0.1 ) );
+
+model = (V,[VV, EVand])
+GL.VIEW( GL.numbering(.5)( model,GL.COLORS[1],0.1 ) );
+
+model = (V,[VV, EVxor])
+GL.VIEW( GL.numbering(.5)( model,GL.COLORS[1],0.1 ) );</code></pre><h2 id="Immagini-bool2d"><a class="docs-heading-anchor" href="#Immagini-bool2d">Immagini <code>bool2d</code></a><a id="Immagini-bool2d-1"></a><a class="docs-heading-anchor-permalink" href="#Immagini-bool2d" title="Permalink"></a></h2><p><img src="assets/bool2d/bool2d1.png" alt="Risultato 1"/> <img src="assets/bool2d/bool2d2.png" alt="Risultato 2"/> <img src="assets/bool2d/bool2d3.png" alt="Risultato 3"/> <img src="assets/bool2d/bool2d4.png" alt="Risultato 4"/> <img src="assets/bool2d/bool2d5.png" alt="Risultato 5"/> <img src="assets/bool2d/bool2d6.png" alt="Risultato 6"/> <img src="assets/bool2d/bool2d7.png" alt="Risultato 7"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="analisi.html">« Analisi delle prestazioni</a><a class="docs-footer-nextpage" href="esempiobool3d.html">Esempio con immagini (3D) »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 15 June 2022 16:46">Wednesday 15 June 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
